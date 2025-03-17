@@ -1,0 +1,32 @@
+Set-Variable -Option Constant -Name constant_EKUDefinition -Value @{
+    'ClientAuth' = '1.3.6.1.5.5.7.3.2'
+    'ServerAuth' = '1.3.6.1.5.5.7.3.1'
+    'CodeSigning' = '1.3.6.1.5.5.7.3.3'
+    'EmailProtection' = '1.3.6.1.5.5.7.3.4'
+    'TimeStamping' = '1.3.6.1.5.5.7.3.8'
+    'OCSPSigning' = '1.3.6.1.5.5.7.3.9'
+    'SmartCardLogon' = '1.3.6.1.4.1.311.20.2.2'
+    'EncryptFileSystem' = '1.3.6.1.4.1.311.10.3.4'
+    'IPSecIKE' = '1.3.6.1.5.5.7.3.17'
+    'PSecIKEIntermediate' = '1.3.6.1.5.5.8.2.2'
+    'KDCAuth' = '1.3.6.1.5.2.3.5'
+    'IpSecurityUser' = '1.3.6.1.5.5.7.3.7'
+}
+
+Set-Variable -Option Constant -Name constant_KUDefinition -Value @{
+    'DigitalSignature'       = @{ 'Oid' = '2.5.29.150'; 'KeyTypes' = @('RSA', 'ECDSA') }
+    'CRLSign'                = @{ 'Oid' = '2.5.29.156'; 'KeyTypes' = @('RSA', 'ECDSA') }
+    'DataEncipherment'       = @{ 'Oid' = '2.5.29.153'; 'KeyTypes' = @('RSA') }
+    'DecipherOnly'           = @{ 'Oid' = '2.5.29.158'; 'KeyTypes' = @('ECDSA') }
+    'EncipherOnly'           = @{ 'Oid' = '2.5.29.157'; 'KeyTypes' = @('ECDSA') }
+    'KeyAgreement'           = @{ 'Oid' = '2.5.29.154'; 'KeyTypes' = @('ECDSA') }
+    'KeyCertSign'            = @{ 'Oid' = '2.5.29.155'; 'KeyTypes' = @('RSA', 'ECDSA') }
+    'KeyEncipherment'        = @{ 'Oid' = '2.5.29.152'; 'KeyTypes' = @('RSA') }
+    'NonRepudiation'         = @{ 'Oid' = '2.5.29.151'; 'KeyTypes' = @('RSA', 'ECDSA') }
+}
+
+Set-Variable -Option Constant -Name constant_HashingAlgorithm -Value @('SHA256', 'SHA384', 'SHA512')
+
+Set-Variable -Option Constant -Name constant_SignatureAlgorithm -Value @('RSA', 'ECDSA')
+
+Set-Variable -Option Constant -Name constant_SCEPmanRoles -Value @('CSR.SelfService', 'CSR.Request.Db')
