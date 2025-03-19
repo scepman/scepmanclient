@@ -6,7 +6,7 @@ Function New-SCEPmanESTCertificate {
             ParameterSetName='AzAuth',
             Position=0
         )]
-        [String]$AppServiceUrl,
+        [String]$Url,
         [Parameter(ParameterSetName='AzAuth')]
         [String]$ResourceUrl,
 
@@ -135,8 +135,8 @@ Function New-SCEPmanESTCertificate {
             Connect-SCEPmanAzAccount @Connect_Params
     
             If (-not $PSBoundParameters.ContainsKey('ResourceUrl')) {
-                Write-Verbose "$($MyInvocation.MyCommand): No resource URL provided. Trying to find Enterprise Application for URL: $AppServiceUrl"
-                $ResourceUrl = Get-SCEPmanResourceUrl -AppServiceUrl $AppServiceUrl
+                Write-Verbose "$($MyInvocation.MyCommand): No resource URL provided. Trying to find Enterprise Application for URL: $Url"
+                $ResourceUrl = Get-SCEPmanResourceUrl -AppServiceUrl $Url
             }
             
             $AccessToken = Get-SCEPmanAccessToken -ResourceUrl $ResourceUrl
@@ -146,19 +146,19 @@ Function New-SCEPmanESTCertificate {
     Process {
 
         If($PSCmdlet.ParameterSetName -in 'CertAuthFromObject', 'CertAuthFromStore') {
-            $AppServiceUrl = Get-AppServiceUrlFromCertificate -Certificate $Certificate
+            $Url = Get-AppServiceUrlFromCertificate -Certificate $Certificate
             $PrivateKey = New-PrivateKeyFromCertificate -Certificate $Certificate
             $Request = New-CSRfromCertificate -Certificate $Certificate -PrivateKey $PrivateKey
 
-            $NewCertificate = Invoke-ESTmTLSRequest -AppServiceUrl $AppServiceUrl -Certificate $Certificate -Request $Request
+            $NewCertificate = Invoke-ESTmTLSRequest -AppServiceUrl $Url -Certificate $Certificate -Request $Request
         }
 
         If($PSCmdlet.ParameterSetName -eq 'CertAuthFromFile') {
-            $AppServiceUrl = Get-AppServiceUrlFromCertificate -Certificate $Certificate
+            $Url = Get-AppServiceUrlFromCertificate -Certificate $Certificate
             $PrivateKey = $Certificate.PrivateKey
             $Request = New-CSRfromCertificate -Certificate $Certificate -PrivateKey $PrivateKey
 
-            $NewCertificate = Invoke-ESTmTLSRequest -AppServiceUrl $AppServiceUrl -Certificate $Certificate -Request $Request
+            $NewCertificate = Invoke-ESTmTLSRequest -AppServiceUrl $Url -Certificate $Certificate -Request $Request
         }
 
         If($PSCmdlet.ParameterSetName -eq 'AzAuth') {
@@ -188,7 +188,7 @@ Function New-SCEPmanESTCertificate {
     
             $Request = New-CSR -PrivateKey $PrivateKey @Request_Params
     
-            $NewCertificate = Invoke-ESTRequest -AppServiceUrl $AppServiceUrl -AccessToken $AccessToken -Request $Request
+            $NewCertificate = Invoke-ESTRequest -AppServiceUrl $Url -AccessToken $AccessToken -Request $Request
         }
         
         If ($PSBoundParameters.ContainsKey('SaveToStore')) {
@@ -240,7 +240,7 @@ Function New-SCEPmanESTCertificate {
 
                 If (-not $PSBoundParameters.ContainsKey('IncludeRootCA')) {
                     Write-Verbose "$($MyInvocation.MyCommand): Saving root CA certificate to folder $SaveToFolder"
-                    $RootCertificate = Get-ESTRootCA -AppServiceUrl $AppServiceUrl
+                    $RootCertificate = Get-ESTRootCA -AppServiceUrl $Url
                     Save-CertificateToFile -Certificate $RootCertificate -FilePath "$SaveToFolder\$($RootCertificate.Subject)" -Format $Format
                 }
             }
