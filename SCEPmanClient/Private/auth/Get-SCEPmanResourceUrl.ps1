@@ -14,6 +14,7 @@
 
 Function Get-SCEPmanResourceUrl {
     [CmdletBinding()]
+    [OutputType([String])]
     Param(
         [Parameter(Mandatory)]
         [String]$AppServiceUrl

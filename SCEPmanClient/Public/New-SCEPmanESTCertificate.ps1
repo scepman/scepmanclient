@@ -95,6 +95,9 @@
 
 Function New-SCEPmanESTCertificate {
     [CmdletBinding(DefaultParameterSetName='AzAuth')]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "", Justification="The parameter PlainTextPassword is meant to be.. plain text.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPlainTextForPassword", "", Justification="The parameter PlainTextPassword is meant to be.. plain text.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingUsernameAndPasswordParams", "", Justification="Service principal authentication requires username and password.")]
     Param(
         [Parameter(
             Mandatory,

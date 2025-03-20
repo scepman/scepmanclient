@@ -19,6 +19,8 @@
     [byte[]](65, 66, 67) | ConvertFrom-Bytes
 #>
 Function ConvertFrom-Bytes {
+    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="This function is intended to convert multiple bytes to a string")]
     Param(
         [Parameter(Mandatory, ValueFromPipeline)]
         [Byte]$Bytes,

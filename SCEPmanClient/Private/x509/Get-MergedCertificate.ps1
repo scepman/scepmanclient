@@ -17,7 +17,7 @@
 
 Function Get-MergedCertificate {
     [CmdletBinding()]
-
+    [OutputType([System.Security.Cryptography.X509Certificates.X509Certificate2])]
     Param(
         [Parameter(Mandatory)]
         [System.Security.Cryptography.X509Certificates.X509Certificate2]$Certificate,

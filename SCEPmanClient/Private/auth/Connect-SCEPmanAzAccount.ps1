@@ -31,6 +31,7 @@
 
 Function Connect-SCEPmanAzAccount {
     [CmdletBinding(DefaultParameterSetName = 'Interactive')]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "", Justification="No prior conversion to secure string as the client secret is passed in plain text")]
     Param(
         [Parameter(ParameterSetName='DeviceCode')]
         [Switch]$DeviceCode,
