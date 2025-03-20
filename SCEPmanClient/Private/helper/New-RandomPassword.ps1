@@ -1,3 +1,11 @@
+<#
+.SYNOPSIS
+    Generates a random password.
+
+.OUTPUTS
+    System.Security.SecureString
+#>
+
 Function New-RandomPassword {
     $securePassword = [System.Security.SecureString]::new()
     $random = [System.Security.Cryptography.RandomNumberGenerator]::Create()

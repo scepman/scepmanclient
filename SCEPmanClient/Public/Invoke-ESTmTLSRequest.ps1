@@ -21,6 +21,34 @@ public static class CertificateCallbacks
 '@
 Add-Type -TypeDefinition $csCodeSelectFirstCertificateCallback -Language CSharp
 
+
+<#
+.SYNOPSIS
+    Sends a mTLS request to an EST endpoint.
+
+.DESCRIPTION
+    Sends a mTLS request to an EST endpoint. This function uses the HttpClientHandler in PowerShell 5 and the SocketsHttpHandler in PowerShell 7.
+    The function will throw an error if the certificate does not have a private key.
+
+.PARAMETER AppServiceUrl
+    The URL of the EST service.
+
+.PARAMETER Endpoint
+    The endpoint of the EST service. Default is '/.well-known/est/simplereenroll'.
+
+.PARAMETER Certificate
+    The certificate to use for the mTLS request.
+
+.PARAMETER Request
+    The request to send to the EST service.
+
+.EXAMPLE
+    $Certificate = Get-ChildItem -Path Cert:\CurrentUser\My | Where-Object { $_.Subject -eq "CN=ESTClient" }
+    $PrivateKey = New-PrivateKeyFromCertificate -Certificate $Certificate
+    $Request = New-CSRFromCertificate -Certificate $Certificate
+    $Response = Invoke-ESTmTLSRequest -AppServiceUrl "https://est.example.com" -Certificate $Certificate -Request $Request
+#>
+
 Function Invoke-ESTmTLSRequest {
     [CmdletBinding()]
     Param(

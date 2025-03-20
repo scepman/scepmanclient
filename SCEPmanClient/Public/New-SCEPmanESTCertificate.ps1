@@ -1,3 +1,98 @@
+<#
+.SYNOPSIS
+    Request a new certificate from SCEPman using EST.
+
+.DESCRIPTION
+    This function requests a new certificate from SCEPman using EST. The function supports different authentication methods and certificate sources.
+
+.PARAMETER Url
+    The URL of the SCEPman service.
+
+.PARAMETER ResourceUrl
+    The URL of the SCEPman service. If not provided, the function will try to find the Enterprise Application for the URL.
+
+.PARAMETER IgnoreExistingSession
+    Ignore existing Azure session.
+
+.PARAMETER DeviceCode
+    Use device code authentication.
+
+.PARAMETER ClientId
+    The client ID for service principal authentication.
+
+.PARAMETER TenantId
+    The tenant ID for service principal authentication.
+
+.PARAMETER ClientSecret
+    The client secret for service principal authentication.
+
+.PARAMETER Certificate
+    The certificate to use for authentication.
+
+.PARAMETER CertificateBySubject
+    The subject of the certificate to use for authentication. This parameter is used to find the certificate in the certificate store by matching the input of the parameter with the Subject property of the certificate using regex.
+
+.PARAMETER CertificateFromFile
+    The path to the certificate file to use for authentication.
+
+.PARAMETER KeyFromFile
+    The path to the private key file to use for authentication.
+
+.PARAMETER SubjectFromUserContext
+    Use the current user context for the subject.
+
+.PARAMETER SubjectFromHostname
+    Use the hostname for the subject.
+
+.PARAMETER Subject
+    The subject of the certificate.
+
+.PARAMETER UPN
+    User principal name to be added to the certificates subject alternative name.
+
+.PARAMETER Email
+    Email to be added to the certificates subject alternative name.
+
+.PARAMETER DNSName
+    DNS name to be added to the certificates subject alternative name.
+
+.PARAMETER URI
+    URI to be added to the certificates subject alternative name.
+
+.PARAMETER IP
+    IP address to be added to the certificates subject alternative name.
+
+.PARAMETER SignatureAlgorithm
+    The signature algorithm to use for the private key.
+
+.PARAMETER ExtendedKeyUsage
+    The extended key usage to add to the certificate.
+
+.PARAMETER ExtendedKeyUsageOID
+    The extended key usage OID to add to the certificate.
+
+.PARAMETER SaveToFolder
+    The folder to save the certificate to.
+
+.PARAMETER Format
+    The format to save the certificate in. Default is PFX. Possible values are DER, PEM, PFX.
+
+.PARAMETER IncludeRootCA
+    Include the root CA certificate if the certificate is saved to a folder.
+
+.PARAMETER PlainTextPassword
+    The password for the private key in plain text.
+
+.PARAMETER NoPassword
+    Do not use a password for the private key.
+
+.PARAMETER SaveToStore
+    Save the certificate to the certificate store. Possible values are LocalMachine, CurrentUser.
+
+.PARAMETER Exportable
+    Mark the private key as exportable.
+#>
+
 Function New-SCEPmanESTCertificate {
     [CmdletBinding(DefaultParameterSetName='AzAuth')]
     Param(

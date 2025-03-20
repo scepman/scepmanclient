@@ -1,3 +1,27 @@
+<#
+.SYNOPSIS
+    Saves a certificate to the Windows certificate store.
+
+.DESCRIPTION
+    Saves an X.509 certificate and its private key to the Windows certificate store, supporting both `CurrentUser` and `LocalMachine` stores. The function merges the certificate with the private key, handles RSA and ECDSA algorithms, and optionally allows the private key to be exportable. It ensures proper cryptographic handling and provides verbose output for tracing operations.
+
+.PARAMETER Certificate
+    The X.509 certificate to save to the store.
+
+.PARAMETER PrivateKey
+    The private key to merge with the certificate.
+
+.PARAMETER StoreName
+    The name of the certificate store to save the certificate to. Supported values are `CurrentUser` and `LocalMachine`.
+
+.PARAMETER Exportable
+    Indicates whether the private key should be exportable.
+
+.EXAMPLE
+    Save-CertificateToStore -Certificate $Certificate -PrivateKey $PrivateKey -StoreName 'CurrentUser'
+    Saves the specified certificate and private key to the CurrentUser certificate store.
+#>
+
 Function Save-CertificateToStore {
     [CmdletBinding()]
     Param(

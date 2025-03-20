@@ -3,7 +3,19 @@
     Wrapper for Connect-AzAccount to make sure we have a valid Azure context
 
 .DESCRIPTION
-    Check for existin Azure context and connect to Azure if needed
+    Check for existing Azure context and connect to Azure if needed
+
+.PARAMETER DeviceCode
+    Use device code authentication to connect to Azure
+
+.PARAMETER AppRegistrationSecret
+    Use app registration with client secret to connect to Azure
+
+.PARAMETER AppRegistrationCertificate
+    Use app registration with certificate to connect to Azure
+
+.PARAMETER IgnoreExistingSession
+    Ignore existing Azure context and connect to Azure
 
 .OUTPUTS
     None

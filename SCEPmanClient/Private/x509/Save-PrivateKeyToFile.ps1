@@ -1,3 +1,33 @@
+<#
+.SYNOPSIS
+    Saves a private key to a file.
+
+.DESCRIPTION
+    Saves a private key to a file. The private key can be encrypted with a password.
+
+.PARAMETER PrivateKey
+    The private key to save.
+
+.PARAMETER EncryptionAlgorithm
+    The encryption algorithm to use when encrypting the private key.
+
+.PARAMETER HashingAlgorithm
+    The hashing algorithm to use when encrypting the private key.
+
+.PARAMETER IterationCount
+    The number of iterations to use when encrypting the private key.
+
+.PARAMETER Password
+    The password to use when encrypting the private key.
+
+.PARAMETER FilePath
+    The path to save the private key to.
+
+.EXAMPLE
+    Save-PrivateKeyToFile -PrivateKey $PrivateKey -FilePath 'C:\Temp\PrivateKey.pem'
+    Saves the private key to 'C:\Temp\PrivateKey.pem'.
+#>
+
 Function Save-PrivateKeyToFile {
     Param (
         [Parameter(Mandatory)]

@@ -1,3 +1,23 @@
+<#
+    .SYNOPSIS
+    Get the root CA certificate from the EST server.
+
+    .DESCRIPTION
+    Get the root CA certificate from the EST server. The root CA certificate is used to verify the EST server's certificate.
+
+    .PARAMETER AppServiceUrl
+    The URL of the EST server.
+
+    .PARAMETER Endpoint
+    The endpoint to get the root CA certificate from. Default is '/.well-known/est/cacerts'.
+
+    .EXAMPLE
+    Get-ESTRootCA -AppServiceUrl 'https://est.example.com'
+
+    .OUTPUTS
+    System.Security.Cryptography.X509Certificates.X509Certificate2Collection
+#>
+
 Function Get-ESTRootCA {
     [CmdletBinding()]
     Param(

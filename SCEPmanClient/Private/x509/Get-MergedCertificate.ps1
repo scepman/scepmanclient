@@ -1,3 +1,20 @@
+<#
+.SYNOPSIS
+    Merges a certificate with a private key.
+
+.DESCRIPTION
+    Merges a certificate with a private key. The private key must be in the form of a RSACryptoServiceProvider or ECDsaCng object.
+
+.PARAMETER Certificate
+    The certificate to merge.
+
+.PARAMETER PrivateKey
+    The private key to merge.
+
+.OUTPUTS
+    System.Security.Cryptography.X509Certificates.X509Certificate2
+#>
+
 Function Get-MergedCertificate {
     [CmdletBinding()]
 

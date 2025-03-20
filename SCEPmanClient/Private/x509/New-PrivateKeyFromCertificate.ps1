@@ -1,3 +1,17 @@
+<#
+.SYNOPSIS
+    Creates a new private key based on the public key of a certificate.
+
+.DESCRIPTION
+    This function creates a new private key based on the public key of a certificate. The function supports RSA and ECDSA keys.
+
+.PARAMETER Certificate
+    The certificate to create the private key from.
+
+.OUTPUTS
+    System.Security.Cryptography.RSACng or System.Security.Cryptography.ECDsaCng
+#>
+
 Function New-PrivateKeyFromCertificate {
     [CmdletBinding()]
     Param(

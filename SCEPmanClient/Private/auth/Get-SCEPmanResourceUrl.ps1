@@ -1,3 +1,17 @@
+<#
+.SYNOPSIS
+    Get the ClientId of the Enterprise Application for the given AppServiceUrl
+
+.DESCRIPTION
+    This function queries all available Entra Enterprise Applications and returns the ClientId of the application that matches the AppServiceUrl
+
+.PARAMETER AppServiceUrl
+    The URL of the AppService that is used to find the Enterprise Application
+
+.OUTPUTS
+    System.String Get-SCEPmanResourceUrl returns the ClientId of the Enterprise Application
+#>
+
 Function Get-SCEPmanResourceUrl {
     [CmdletBinding()]
     Param(

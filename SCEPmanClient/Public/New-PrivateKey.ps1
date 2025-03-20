@@ -1,3 +1,24 @@
+<#
+.SYNOPSIS
+    Creates a new private key.
+
+.DESCRIPTION
+    Creates a new private key using the specified algorithm and key size.
+
+.PARAMETER Algorithm
+    The algorithm to use for the private key. Supported values are 'RSA' and 'ECDSA'.
+
+.PARAMETER KeySize
+    The size of the key to create. For RSA, supported key sizes are 1024, 2048, 3072, and 4096. For ECDSA, supported key sizes are 256, 384, and 521.
+
+.PARAMETER ECCurve
+    The curve to use for the ECDSA key. Supported values are 'NistP256', 'NistP384', and 'NistP521'.
+
+.EXAMPLE
+    New-PrivateKey -Algorithm RSA -KeySize 2048
+    Creates a new RSA private key with a key size of 2048 bits.
+#>
+
 Function New-PrivateKey {
     Param(
         [Parameter()]

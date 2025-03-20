@@ -1,3 +1,58 @@
+<#
+.SYNOPSIS
+    Create a new certificate signing request (CSR) using the specified parameters.
+
+.DESCRIPTION
+    Create a new certificate signing request (CSR) using the specified parameters.
+
+.PARAMETER Subject
+    The subject name of the certificate request.
+
+.PARAMETER ExtendedKeyUsage
+    The extended key usage of the certificate request.
+
+.PARAMETER ExtendedKeyUsageOid
+    The extended key usage OID of the certificate request.
+
+.PARAMETER KeyUsage
+    The key usage of the certificate request.
+
+.PARAMETER KeyUsageOid
+    The key usage OID of the certificate request.
+
+.PARAMETER PrivateKey
+    The private key to use for the certificate request.
+
+.PARAMETER HashingAlgorithm
+    The hashing algorithm to use for the certificate request.
+
+.PARAMETER IPAddress
+    The IP addresses to add to the Subject Alternative Name extension.
+
+.PARAMETER DNSName
+    The DNS names to add to the Subject Alternative Name extension.
+
+.PARAMETER Email
+    The email addresses to add to the Subject Alternative Name extension.
+
+.PARAMETER URI
+    The URIs to add to the Subject Alternative Name extension.
+
+.PARAMETER UPN
+    The User Principal Names to add to the Subject Alternative Name extension.
+
+.PARAMETER Raw
+    Return the raw certificate request object instead of the base64 encoded string.
+
+.EXAMPLE
+    New-CSR -Subject 'CN=Test' -PrivateKey $PrivateKey
+    Create a new certificate signing request for the subject 'CN=Test' using the specified private key.
+
+.EXAMPLE
+    New-CSR -Subject 'CN=Test' -PrivateKey $PrivateKey -ExtendedKeyUsage 'ClientAuth', 'ServerAuth' -KeyUsage 'DigitalSignature', 'KeyEncipherment' -IPAddress '10.11.0.11'
+    Create a new certificate signing request for the subject 'CN=Test' using the specified private key with the specified extended key usage, key usage and IP address.
+#>
+
 Function New-CSR {
     Param(
         [Parameter(Mandatory)]

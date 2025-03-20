@@ -1,3 +1,18 @@
+<#
+.SYNOPSIS
+    Extracts the AppServiceUrl from the Authority Information Access (AIA) extension of a certificate.
+
+.DESCRIPTION
+    Extracts the AppServiceUrl from the Authority Information Access (AIA) extension of a certificate.
+    The AIA extension contains URLs to the certificate issuer's certificate, which is used to infer the AppServiceUrl.
+
+.PARAMETER Certificate
+    The certificate from which to extract the AppServiceUrl.
+
+.OUTPUTS
+    System.String
+#>
+
 Function Get-AppServiceUrlFromCertificate {
     [CmdletBinding()]
     Param(
