@@ -204,7 +204,7 @@ Function New-SCEPmanESTCertificate {
             }
 
             Write-Verbose "$($MyInvocation.MyCommand): Loading certificate from file: $CertificateFromFile"
-            
+
             $PEM = Get-Content -Path $CertificateFromFile -Raw
             $Key = Get-Content -Path $KeyFromFile -Raw
 
@@ -220,20 +220,20 @@ Function New-SCEPmanESTCertificate {
             Set-AzConfig -Scope Process -LoginExperienceV2 Off | Out-Null
 
             $Connect_Params = @{}
-    
+
             If ($PSBoundParameters.ContainsKey('IgnoreExistingSession')) { $Connect_Params['IgnoreExistingSession'] = $true }
             If ($PSBoundParameters.ContainsKey('DeviceCode')) { $Connect_Params['DeviceCode'] = $true }
             If ($PSBoundParameters.ContainsKey('ClientId')) { $Connect_Params['ClientId'] = $ClientId }
             If ($PSBoundParameters.ContainsKey('TenantId')) { $Connect_Params['TenantId'] = $TenantId }
             If ($PSBoundParameters.ContainsKey('ClientSecret')) { $Connect_Params['ClientSecret'] = $ClientSecret }
-    
+
             Connect-SCEPmanAzAccount @Connect_Params
-    
+
             If (-not $PSBoundParameters.ContainsKey('ResourceUrl')) {
                 Write-Verbose "$($MyInvocation.MyCommand): No resource URL provided. Trying to find Enterprise Application for URL: $Url"
                 $ResourceUrl = Get-SCEPmanResourceUrl -AppServiceUrl $Url
             }
-            
+
             $AccessToken = Get-SCEPmanAccessToken -ResourceUrl $ResourceUrl
         }
     }
@@ -259,9 +259,9 @@ Function New-SCEPmanESTCertificate {
         If($PSCmdlet.ParameterSetName -eq 'AzAuth') {
             $PrivateKey_Params = @{}
             If($PSBoundParameters.ContainsKey('SignatureAlgorithm')) { $PrivateKey_Params['Algorithm'] = $SignatureAlgorithm }
-    
+
             $PrivateKey = New-PrivateKey @PrivateKey_Params
-    
+
             $Request_Params = @{}
             If ($PSBoundParameters.ContainsKey('SubjectFromUserContext')) {
                 Write-Verbose "$($MyInvocation.MyCommand): SubjectFromUserContext is set. Using current user context for subject"
@@ -280,12 +280,12 @@ Function New-SCEPmanESTCertificate {
             If($PSBoundParameters.ContainsKey('IP')) { $Request_Params['IP'] = $IP }
             If($PSBoundParameters.ContainsKey('ExtendedKeyUsage')) { $Request_Params['ExtendedKeyUsage'] = $ExtendedKeyUsage }
             If($PSBoundParameters.ContainsKey('ExtendedKeyUsageOid')) { $Request_Params['ExtendedKeyUsageOid'] = $ExtendedKeyUsageOid }
-    
+
             $Request = New-CSR -PrivateKey $PrivateKey @Request_Params
-    
+
             $NewCertificate = Invoke-ESTRequest -AppServiceUrl $Url -AccessToken $AccessToken -Request $Request
         }
-        
+
         If ($PSBoundParameters.ContainsKey('SaveToStore')) {
             Write-Verbose "$($MyInvocation.MyCommand): Saving certificate to store $SaveToStore"
             $SaveToStore_Params = @{

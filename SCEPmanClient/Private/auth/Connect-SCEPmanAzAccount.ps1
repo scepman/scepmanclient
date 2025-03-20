@@ -80,7 +80,7 @@ Function Connect-SCEPmanAzAccount {
     } ElseIf ($PSCmdlet.ParameterSetName -eq 'Interactive') {
         Write-Verbose "$($MyInvocation.MyCommand): Connecting to Azure using interactive login"
         Connect-AzAccount -WarningAction SilentlyContinue | Out-Null
-        
+
     } else {
         throw "$($MyInvocation.MyCommand): Invalid parameter set"
     }

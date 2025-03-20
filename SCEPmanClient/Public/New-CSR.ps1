@@ -142,16 +142,16 @@ Function New-CSR {
             $ExtendedKeyUsage | ForEach-Object {
                 Write-Verbose "$($MyInvocation.MyCommand): Adding Extended Key Usage $_"
                 $Oid = New-Object System.Security.Cryptography.Oid $constant_EKUDefinition[$_]
-    
+
                 $OidCollection.Add($Oid) | Out-Null
             }
-        } 
+        }
 
         If ($ExtendedKeyUsageOid) {
             $ExtendedKeyUsageOid | ForEach-Object {
                 Write-Verbose "$($MyInvocation.MyCommand): Adding Extended Key Usage OID $_"
                 $Oid = New-Object System.Security.Cryptography.Oid $_
-    
+
                 $OidCollection.Add($Oid) | Out-Null
             }
         }
@@ -170,35 +170,35 @@ Function New-CSR {
                 $SANBuilder.AddIpAddress($_)
             }
         }
-    
+
         If($DNSName) {
             $DNSName | ForEach-Object {
                 Write-Verbose "$($MyInvocation.MyCommand): Adding DNS name $_ to Subject Alternative Name extension"
                 $SANBuilder.AddDnsName($_)
             }
         }
-    
+
         If($Email) {
             $Email | ForEach-Object {
                 Write-Verbose "$($MyInvocation.MyCommand): Adding email address $_ to Subject Alternative Name extension"
                 $SANBuilder.AddEmailAddress($_)
             }
         }
-    
+
         If($URI) {
             $URI | ForEach-Object {
                 Write-Verbose "$($MyInvocation.MyCommand): Adding URI $_ to Subject Alternative Name extension"
                 $SANBuilder.AddUri($_)
             }
         }
-    
+
         If($UPN) {
             $UPN | ForEach-Object {
                 Write-Verbose "$($MyInvocation.MyCommand): Adding User Principal Name $_ to Subject Alternative Name extension"
                 $SANBuilder.AddUserPrincipalName($_)
             }
         }
-    
+
         $SANExtension = $SANBuilder.Build()
         $Request.CertificateExtensions.Add($SANExtension)
 

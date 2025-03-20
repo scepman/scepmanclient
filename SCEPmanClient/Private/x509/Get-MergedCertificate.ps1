@@ -33,7 +33,7 @@ Function Get-MergedCertificate {
         $MergedCertificate = [System.Security.Cryptography.X509Certificates.RSACertificateExtensions]::CopyWithPrivateKey($CertificateCollection[0], $PrivateKey)
     } ElseIf ($PrivateKey.SignatureAlgorithm -eq 'ECDSA') {
         Write-Verbose "$($MyInvocation.MyCommand): Merging certificate with ECDSA private key"
-        $MergedCertificate = [System.Security.Cryptography.X509Certificates.ECDsaCertificateExtensions]::CopyWithPrivateKey($CertificateCollection[0], $PrivateKey)        
+        $MergedCertificate = [System.Security.Cryptography.X509Certificates.ECDsaCertificateExtensions]::CopyWithPrivateKey($CertificateCollection[0], $PrivateKey)
     } Else {
         throw "Unsupported signature algorithm $($PrivateKey.SignatureAlgorithm)"
     }

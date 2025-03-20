@@ -39,7 +39,7 @@ Function New-PrivateKey {
             throw "$($MyInvocation.MyCommand): Invalid key size for ECDSA. Supported key sizes are 256, 384, 521"
         }
     }
-    
+
     if ($Algorithm -eq 'RSA') {
         If($KeySize) {
             Write-Verbose "$($MyInvocation.MyCommand): Setting key size to $KeySize"
