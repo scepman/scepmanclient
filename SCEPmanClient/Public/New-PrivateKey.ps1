@@ -7,7 +7,7 @@ Function New-PrivateKey {
         [Parameter()]
         [Int]$KeySize,
 
-        $ECDsaCurve
+        $ECCurve
     )
 
     If ($PSBoundParameters.ContainsKey('KeySize')) {
@@ -29,9 +29,9 @@ Function New-PrivateKey {
         Write-Verbose "$($MyInvocation.MyCommand): Creating RSA key"
         $PrivateKey = [System.Security.Cryptography.RSA]::Create($KeySize)
     } elseif ($Algorithm -eq 'ECDSA') {
-        If($ECDsaCurve) {
+        If($ECCurve) {
             Write-Verbose "$($MyInvocation.MyCommand): Creating ECDSA key with given curve"
-            $PrivateKey = [System.Security.Cryptography.ECDsa]::Create($ECDsaCurve)
+            $PrivateKey = [System.Security.Cryptography.ECDsa]::Create($ECCurve)
         } Else {
             Write-Verbose "$($MyInvocation.MyCommand): Creating ECDSA key"
             $PrivateKey = [System.Security.Cryptography.ECDsa]::Create()
