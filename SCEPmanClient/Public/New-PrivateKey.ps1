@@ -5,23 +5,19 @@ Function New-PrivateKey {
         [String]$Algorithm = 'RSA',
 
         [Parameter()]
-        [ValidateScript({
-            If ($Algorithm -eq 'RSA') {
-                If (-not (@(1024, 2048, 3072, 4096) -contains $_)) {
-                    throw "$($MyInvocation.MyCommand): Invalid key size for RSA. Supported key sizes are 1024, 2048, 3072, 4096"
-                }
-                return $true
-            } ElseIf ($Algorithm -eq 'ECDSA') {
-                If (-not (@(256, 384, 521) -contains $_)) {
-                    throw "$($MyInvocation.MyCommand): Invalid key size for ECDSA. Supported key sizes are 256, 384, 521"
-                }
-                return $true
-            }
-        })]
         [Int]$KeySize,
 
         $ECDsaCurve
     )
+
+    If ($PSBoundParameters.ContainsKey('KeySize')) {
+        If ($Algorithm -eq 'RSA' -and (-not (@(1024, 2048, 3072, 4096) -contains $_))) {
+            throw "$($MyInvocation.MyCommand): Invalid key size for RSA. Supported key sizes are 1024, 2048, 3072, 4096"
+
+        } ElseIf ($Algorithm -eq 'ECDSA' -and (-not (@(256, 384, 521) -contains $_))) {
+            throw "$($MyInvocation.MyCommand): Invalid key size for ECDSA. Supported key sizes are 256, 384, 521"
+        }
+    }
     
     if ($Algorithm -eq 'RSA') {
         If($KeySize) {
