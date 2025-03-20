@@ -164,7 +164,6 @@ Function New-CSR {
         $SANBuilder = New-Object System.Security.Cryptography.X509Certificates.SubjectAlternativeNameBuilder
 
         If($IPAddress) {
-            $HasSAN = $true
             $IPAddress | ForEach-Object {
                 Write-Verbose "$($MyInvocation.MyCommand): Adding IP address $_ to Subject Alternative Name extension"
                 $SANBuilder.AddIpAddress($_)
