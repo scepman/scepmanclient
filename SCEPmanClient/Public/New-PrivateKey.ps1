@@ -32,10 +32,10 @@ Function New-PrivateKey {
     )
 
     If ($PSBoundParameters.ContainsKey('KeySize')) {
-        If ($Algorithm -eq 'RSA' -and (-not (@(1024, 2048, 3072, 4096) -contains $_))) {
+        If ($Algorithm -eq 'RSA' -and (-not (@(1024, 2048, 3072, 4096) -contains $KeySize))) {
             throw "$($MyInvocation.MyCommand): Invalid key size for RSA. Supported key sizes are 1024, 2048, 3072, 4096"
 
-        } ElseIf ($Algorithm -eq 'ECDSA' -and (-not (@(256, 384, 521) -contains $_))) {
+        } ElseIf ($Algorithm -eq 'ECDSA' -and (-not (@(256, 384, 521) -contains $KeySize))) {
             throw "$($MyInvocation.MyCommand): Invalid key size for ECDSA. Supported key sizes are 256, 384, 521"
         }
     }
