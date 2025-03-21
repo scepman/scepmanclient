@@ -41,20 +41,37 @@ Function Invoke-ESTRequest {
         [Parameter()]
         [String]$Endpoint = '/.well-known/est/simpleenroll',
         [Parameter(Mandatory)]
+        [String]$Request,
         [String]$AccessToken,
-        [Parameter(Mandatory)]
-        [String]$Request
+        [PSCredential]$Credential
     )
-
-    $Headers = @{
-        'Authorization' = "Bearer $AccessToken"
-        'Content-Type' = 'application/pkcs10'
-    }
 
     $Uri = ($AppServiceUrl -replace '/$') + $Endpoint
 
+    $Headers = @{
+        'Content-Type' = 'application/pkcs10'
+    }
+
+    If ($PSBoundParameters.ContainsKey('AccessToken')) {
+        Write-Verbose "$($MyInvocation.MyCommand): Add access token to request header"
+        $Headers['Authorization'] = "Bearer $AccessToken"
+    }
+
     Write-Verbose "$($MyInvocation.MyCommand): Sending EST request to $Uri"
-    $Response = Invoke-WebRequest -Uri $Uri -Method POST -Headers $Headers -Body $Request
+
+    $Request_Params = @{
+        Uri     = $Uri
+        Method  = 'POST'
+        Headers = $Headers
+        Body    = $Request
+    }
+
+    If ($PSBoundParameters.ContainsKey('Credential')) {
+        Write-Verbose "$($MyInvocation.MyCommand): Add passed credential to request"
+        $Request_Params['Credential'] = $Credential
+    }
+
+    $Response = Invoke-WebRequest @Request_Params
 
     If ($Response.StatusCode -eq 200) {
         $CertificateCollection = [System.Security.Cryptography.X509Certificates.X509Certificate2Collection]::new()
