@@ -30,6 +30,10 @@ Function Get-SCEPmanResourceUrl {
 
     $Application = Get-AzADApplication | Where-Object { $_.Web.HomePageUrl -match 'scepman.coni.rocks' }
 
+    If (-not $Application) {
+        Write-Error "$($MyInvocation.MyCommand): No application found for AppServiceUrl: $AppServiceUrl - Please check the Home Page URL of the app registration"
+    }
+
     If ($Application.GetType().Name -ne 'MicrosoftGraphApplication') {
         Write-Verbose "$($MyInvocation.MyCommand): Found applications: $($Application.DisplayName)"
         throw "$($MyInvocation.MyCommand): Found multiple applications matching the AppServiceUrl: $AppServiceUrl"
