@@ -104,6 +104,7 @@ Function New-SCEPmanESTCertificate {
             ParameterSetName='AzAuth',
             Position=0
         )]
+        [Alias('AppServiceUrl')]
         [String]$Url,
         [Parameter(ParameterSetName='AzAuth')]
         [String]$ResourceUrl,

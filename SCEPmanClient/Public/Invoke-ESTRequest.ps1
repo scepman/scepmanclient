@@ -5,7 +5,7 @@
 .DESCRIPTION
     This function, `Invoke-ESTRequest`, sends an Enrollment over Secure Transport (EST) request to a specified Application Service URL. It constructs the request with the provided access token, endpoint, and PKCS#10 certificate request, and sends it using the `Invoke-WebRequest` cmdlet. If the response is successful, it parses the returned DER-encoded certificate into an X509Certificate2Collection object; otherwise, it throws an error with the response status code.
 
-.PARAMETER AppServiceUrl
+.PARAMETER Url
     The URL of the Application Service to send the EST request to.
 
 .PARAMETER Endpoint
@@ -29,7 +29,7 @@
     -----END CERTIFICATE REQUEST-----
     "@  # Replace with a valid PKCS#10 certificate request
 
-    $Certificate = Invoke-ESTRequest -AppServiceUrl $AppServiceUrl -AccessToken $AccessToken -Request $Request
+    $Certificate = Invoke-ESTRequest -Url $AppServiceUrl -AccessToken $AccessToken -Request $Request
 #>
 
 Function Invoke-ESTRequest {
@@ -37,7 +37,8 @@ Function Invoke-ESTRequest {
     [OutputType([System.Security.Cryptography.X509Certificates.X509Certificate2Collection])]
     Param(
         [Parameter(Mandatory)]
-        [String]$AppServiceUrl,
+        [Alias('AppServiceUrl')]
+        [String]$Url,
         [Parameter()]
         [String]$Endpoint = '/.well-known/est/simpleenroll',
         [Parameter(Mandatory)]
@@ -46,7 +47,7 @@ Function Invoke-ESTRequest {
         [PSCredential]$Credential
     )
 
-    $Uri = ($AppServiceUrl -replace '/$') + $Endpoint
+    $Uri = ($Url -replace '/$') + $Endpoint
 
     $Headers = @{
         'Content-Type' = 'application/pkcs10'

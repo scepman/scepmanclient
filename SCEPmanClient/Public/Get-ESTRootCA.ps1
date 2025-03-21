@@ -5,7 +5,7 @@
     .DESCRIPTION
     Get the root CA certificate from the EST server. The root CA certificate is used to verify the EST server's certificate.
 
-    .PARAMETER AppServiceUrl
+    .PARAMETER Url
     The URL of the EST server.
 
     .PARAMETER Endpoint
@@ -23,11 +23,12 @@ Function Get-ESTRootCA {
     [OutputType([System.Security.Cryptography.X509Certificates.X509Certificate2Collection])]
     Param(
         [Parameter(Mandatory)]
-        [String]$AppServiceUrl,
+        [Alias('AppServiceUrl')]
+        [String]$Url,
         [String]$Endpoint = '/.well-known/est/cacerts'
     )
 
-    $Uri = $Uri = ($AppServiceUrl -replace '/$') + $Endpoint
+    $Uri = $Uri = ($Url -replace '/$') + $Endpoint
 
     Write-Verbose "$($MyInvocation.MyCommand): Getting root CA from $Uri"
     $Response = Invoke-WebRequest -Uri $Uri -Method GET

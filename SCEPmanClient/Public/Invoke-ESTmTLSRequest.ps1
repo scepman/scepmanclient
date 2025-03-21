@@ -30,7 +30,7 @@ Add-Type -TypeDefinition $csCodeSelectFirstCertificateCallback -Language CSharp
     Sends a mTLS request to an EST endpoint. This function uses the HttpClientHandler in PowerShell 5 and the SocketsHttpHandler in PowerShell 7.
     The function will throw an error if the certificate does not have a private key.
 
-.PARAMETER AppServiceUrl
+.PARAMETER Url
     The URL of the EST service.
 
 .PARAMETER Endpoint
@@ -46,7 +46,7 @@ Add-Type -TypeDefinition $csCodeSelectFirstCertificateCallback -Language CSharp
     $Certificate = Get-ChildItem -Path Cert:\CurrentUser\My | Where-Object { $_.Subject -eq "CN=ESTClient" }
     $PrivateKey = New-PrivateKeyFromCertificate -Certificate $Certificate
     $Request = New-CSRFromCertificate -Certificate $Certificate
-    $Response = Invoke-ESTmTLSRequest -AppServiceUrl "https://est.example.com" -Certificate $Certificate -Request $Request
+    $Response = Invoke-ESTmTLSRequest -Url "https://est.example.com" -Certificate $Certificate -Request $Request
 #>
 
 Function Invoke-ESTmTLSRequest {
@@ -54,7 +54,8 @@ Function Invoke-ESTmTLSRequest {
     [OutputType([System.Security.Cryptography.X509Certificates.X509Certificate2Collection])]
     Param(
         [Parameter(Mandatory)]
-        [String]$AppServiceUrl,
+        [Alias('AppServiceUrl')]
+        [String]$Url,
         [Parameter()]
         [String]$Endpoint = '/.well-known/est/simplereenroll',
         [Parameter(Mandatory)]
@@ -90,7 +91,7 @@ Function Invoke-ESTmTLSRequest {
         $null = $handler.SslOptions.ClientCertificates.Add($Certificate)
     }
 
-    $Uri = ($AppServiceUrl -replace '/$') + $Endpoint
+    $Uri = ($Url -replace '/$') + $Endpoint
 
     $requestmessage = [System.Net.Http.HttpRequestMessage]::new()
     $requestmessage.Content = [System.Net.Http.StringContent]::new(
