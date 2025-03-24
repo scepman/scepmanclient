@@ -307,10 +307,12 @@ Function New-SCEPmanESTCertificate {
             If ($Format -eq 'PFX') {
                 $MergedCertificate = Get-MergedCertificate -Certificate $NewCertificate -PrivateKey $PrivateKey
 
-                If ($PSBoundParameters.ContainsKey('PlainTextPassword')) {
-                    $Password = $PlainTextPassword
-                } Else {
-                    $Password = (Read-Host -Prompt "Enter password for PFX" -AsSecureString) | ConvertFrom-SecureString -AsPlainText
+                If (-not $PSBoundParameters.ContainsKey('NoPassword')) {
+                    If ($PSBoundParameters.ContainsKey('PlainTextPassword')) {
+                        $Password = $PlainTextPassword
+                    } Else {
+                        $Password = (Read-Host -Prompt "Enter password for PFX" -AsSecureString) | ConvertFrom-SecureString -AsPlainText
+                    }
                 }
 
                 $Pkcs12 = $MergedCertificate.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Pkcs12, $Password)
