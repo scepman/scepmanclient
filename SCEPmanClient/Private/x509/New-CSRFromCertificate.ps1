@@ -22,7 +22,8 @@ Function New-CSRFromCertificate {
         [Parameter(Mandatory)]
         [System.Security.Cryptography.X509Certificates.X509Certificate2]$Certificate,
         [Parameter(Mandatory)]
-        $PrivateKey
+        $PrivateKey,
+        [Switch]$Raw
     )
 
     $Subject = $Certificate.Subject
@@ -31,5 +32,13 @@ Function New-CSRFromCertificate {
 
     $Oid = $EKUExtension.EnhancedKeyUsages.Value
 
-    Return New-CSR -Subject $Subject -ExtendedKeyUsageOid $Oid -PrivateKey $PrivateKey
+    $Parameters = @{
+        Subject = $Subject
+        PrivateKey = $PrivateKey
+        ExtendedKeyUsageOID = $Oid
+    }
+
+    If($Raw) { $Parameters['Raw'] = $true }
+
+    Return New-CSR @Parameters
 }
