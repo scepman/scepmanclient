@@ -30,3 +30,10 @@ Set-Variable -Option Constant -Name constant_HashingAlgorithm -Value @('SHA256',
 Set-Variable -Option Constant -Name constant_SignatureAlgorithm -Value @('RSA', 'ECDSA')
 
 Set-Variable -Option Constant -Name constant_SCEPmanRoles -Value @('CSR.SelfService', 'CSR.Request.Db')
+
+Set-Variable -Option Constant -Name constant_Pkcs7EncryptedDataOid -Value ([System.Security.Cryptography.Oid]::new('1.2.840.113549.1.7.6', 'envelopedData'))
+Set-Variable -Option Constant -Name constant_MessageTypeOid -Value ([System.Security.Cryptography.Oid]::new('2.16.840.1.113733.1.9.2'))
+Set-Variable -Option Constant -Name constant_MD5Oid -Value ([System.Security.Cryptography.Oid]::new('1.2.840.113549.2.5', 'digestAlgorithm'))
+Set-Variable -Option Constant -Name constant_TransactionIdOid -Value ([System.Security.Cryptography.Oid]::new('2.16.840.1.113733.1.9.7'))
+Set-Variable -Option Constant -Name constant_SenderNonceOid -Value ([System.Security.Cryptography.Oid]::new('2.16.840.1.113733.1.9.5'))
+

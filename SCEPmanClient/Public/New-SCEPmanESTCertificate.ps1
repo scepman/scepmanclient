@@ -38,6 +38,9 @@
 .PARAMETER KeyFromFile
     The path to the private key file to use for authentication.
 
+.PARAMETER UseSCEPRenewal
+    Use SCEP renewal to request the certificate.
+
 .PARAMETER SubjectFromUserContext
     Use the current user context for the subject.
 
@@ -128,6 +131,8 @@ Function New-SCEPmanESTCertificate {
         [String]$CertificateFromFile,
         [Parameter(ParameterSetName='CertAuthFromFile')]
         [String]$KeyFromFile,
+
+        [Switch]$UseSCEPRenewal,
 
         [Switch]$SubjectFromUserContext,
         [Switch]$SubjectFromHostname,
@@ -247,17 +252,29 @@ Function New-SCEPmanESTCertificate {
         If($PSCmdlet.ParameterSetName -in 'CertAuthFromObject', 'CertAuthFromStore') {
             $Url = Get-AppServiceUrlFromCertificate -Certificate $Certificate
             $PrivateKey = New-PrivateKeyFromCertificate -Certificate $Certificate
-            $Request = New-CSRfromCertificate -Certificate $Certificate -PrivateKey $PrivateKey
 
-            $NewCertificate = Invoke-ESTmTLSRequest -AppServiceUrl $Url -Certificate $Certificate -Request $Request
+            If($UseSCEPRenewal) {
+                $RootCertificate = Get-ESTRootCA -Url $Url
+                $Request = New-CSRfromCertificate -Certificate $Certificate -PrivateKey $PrivateKey -Raw
+                $NewCertificate = Invoke-SCEPRenewal -Url $Url -SignerCertificate $Certificate -RecipientCertificate $RootCertificate -RawRequest $Request
+            } Else {
+                $Request = New-CSRfromCertificate -Certificate $Certificate -PrivateKey $PrivateKey
+                $NewCertificate = Invoke-ESTmTLSRequest -AppServiceUrl $Url -Certificate $Certificate -Request $Request
+            }
         }
 
         If($PSCmdlet.ParameterSetName -eq 'CertAuthFromFile') {
             $Url = Get-AppServiceUrlFromCertificate -Certificate $Certificate
             $PrivateKey = $Certificate.PrivateKey
-            $Request = New-CSRfromCertificate -Certificate $Certificate -PrivateKey $PrivateKey
 
-            $NewCertificate = Invoke-ESTmTLSRequest -AppServiceUrl $Url -Certificate $Certificate -Request $Request
+            If($UseSCEPRenewal) {
+                $RootCertificate = Get-ESTRootCA -Url $Url
+                $Request = New-CSRfromCertificate -Certificate $Certificate -PrivateKey $PrivateKey -Raw
+                $NewCertificate = Invoke-SCEPRenewal -Url $Url -SignerCertificate $Certificate -RecipientCertificate $RootCertificate -RawRequest $Request
+            } Else {
+                $Request = New-CSRfromCertificate -Certificate $Certificate -PrivateKey $PrivateKey
+                $NewCertificate = Invoke-ESTmTLSRequest -AppServiceUrl $Url -Certificate $Certificate -Request $Request
+            }
         }
 
         If($PSCmdlet.ParameterSetName -eq 'AzAuth') {
