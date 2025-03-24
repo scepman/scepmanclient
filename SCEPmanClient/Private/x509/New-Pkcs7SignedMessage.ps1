@@ -4,6 +4,8 @@
 
 .DESCRIPTION
     Signs a message using the PKCS#7 signed data format. The message is signed using the private key of the signer certificate.
+    Additional attributes are added to the signed message to comply with RFC 8894 (SCEP PKIMessage).
+    https://www.rfc-editor.org/rfc/rfc8894.html#name-scep-pkimessage
 
 .PARAMETER SignerCertificate
     The certificate of the signer.
