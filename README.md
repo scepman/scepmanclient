@@ -76,3 +76,16 @@ New-SCEPmanESTCertificate -CertificateFromFile '~/certs/myCert.pem' -KeyFromFile
 ```
 
 When using an encrypted private key you will asked for the password. You can also directly pass the keys password using the `PlainTextPassword` parameter.
+
+### Using SCEPman with a Azure Web Application Firewall
+With SSL Profiles enabled, the WAF will terminate the TLS connections. This will in turn break certificate renewals using EST as the procedure relies on mTLS for authentication. In this case the `UseSCEPRenewal` parameter can be used to instead perform a certificate renewal complying with the SCEP protocol.
+
+```powershell
+New-SCEPmanESTCertificate -CertificateBySubject 'WebServer' -SaveToStore 'LocalMachine' -UseSCEPRenewal
+```
+
+Please note that this requires additional SCEPman configuration regarding the static SCEP endpoint:
+- AppConfig:StaticValidation:Enabled : true
+- AppConfig:StaticValidation:AllowRenewals : true
+- AppConfig:StaticValidation:ReenrollmentAllowedCertificateTypes: Static
+
