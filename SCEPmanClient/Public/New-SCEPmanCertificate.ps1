@@ -96,7 +96,7 @@
     Mark the private key as exportable.
 #>
 
-Function New-SCEPmanESTCertificate {
+Function New-SCEPmanCertificate {
     [CmdletBinding(DefaultParameterSetName='AzAuth')]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "", Justification="The parameter PlainTextPassword is meant to be.. plain text.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPlainTextForPassword", "", Justification="The parameter PlainTextPassword is meant to be.. plain text.")]
