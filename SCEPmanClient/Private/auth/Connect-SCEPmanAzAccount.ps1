@@ -8,6 +8,9 @@
 .PARAMETER DeviceCode
     Use device code authentication to connect to Azure
 
+.PARAMETER Identity
+    Use managed identity to connect to Azure
+
 .PARAMETER AppRegistrationSecret
     Use app registration with client secret to connect to Azure
 
@@ -35,6 +38,9 @@ Function Connect-SCEPmanAzAccount {
     Param(
         [Parameter(ParameterSetName='DeviceCode')]
         [Switch]$DeviceCode,
+
+        [Parameter(ParameterSetName='Identity')]
+        [Switch]$Identity,
 
         [Parameter(Mandatory, ParameterSetName='AppRegistrationSecret')]
         [Parameter(Mandatory, ParameterSetName='AppRegistrationCertificate')]
@@ -68,6 +74,10 @@ Function Connect-SCEPmanAzAccount {
     If($PSCmdlet.ParameterSetName -eq 'DeviceCode') {
         Write-Verbose "$($MyInvocation.MyCommand): Connecting to Azure using device code"
         Connect-AzAccount -DeviceCode -WarningAction SilentlyContinue | Out-Null
+
+    } ElseIf($PSCmdlet.ParameterSetName -eq 'Identity') {
+        Write-Verbose "$($MyInvocation.MyCommand): Connecting to Azure using managed identity"
+        Connect-AzAccount -Identity -WarningAction SilentlyContinue | Out-Null
 
     } ElseIf($PSCmdlet.ParameterSetName -eq 'AppRegistrationSecret') {
         Write-Verbose "$($MyInvocation.MyCommand): Connecting to Azure using app registration and client secret"
