@@ -18,13 +18,13 @@ Create a custom scope that can be used to authorize the client ID `1950a258-227b
 ### Interactive Authentication
 When requesting a new certificate without specifying the authentication mechanism, the user will be authenticated interactively by default. By using the `-SubjectFromUserContext` parameter, the certificate's subject and UPN SAN will be automatically populated based on the logged-in user's context:
 ```powershell
-New-SCEPmanESTCertificate -Url 'scepman.contoso.com' -SubjectFromUserContext -SaveToStore CurrentUser
+New-SCEPmanCertificate -Url 'scepman.contoso.com' -SubjectFromUserContext -SaveToStore CurrentUser
 ```
 
 ### Device Login
 If you want to request a new certificate on a system without any desktop environment you can use the `-DeviceCode` parameter to perform the actual authentication on another session:
 ```powershell
-New-SCEPmanESTCertificate -Url 'scepman.contoso.com' -DeviceCode -SubjectFromUserContext -SaveToFolder /home/user/certificates
+New-SCEPmanCertificate -Url 'scepman.contoso.com' -DeviceCode -SubjectFromUserContext -SaveToFolder /home/user/certificates
 ```
 
 ### Service Principal Authentication
@@ -44,7 +44,7 @@ $Parameters = @{
     'SaveToStore'      = 'LocalMachine'
 }
 
-New-SCEPmanESTCertificate @Parameters
+New-SCEPmanCertificate @Parameters
 ```
 
 ## Authenticate using certificates
@@ -58,21 +58,21 @@ When providing the `CertificateBySubject` parameter, the module will automatical
 The entered value will be regex matched against the subjects in all available certificates.
 
 ```powershell
-New-SCEPmanESTCertificate -CertificateBySubject 'WebServer' -SaveToStore 'LocalMachine'
+New-SCEPmanCertificate -CertificateBySubject 'WebServer' -SaveToStore 'LocalMachine'
 ```
 
 ### Provide a specific certificate
 ```powershell
 $Certificate = Get-ChildItem Cert:\LocalMachine\My | Where-Object Thumbprint -eq '9B08EA68B16773CEF3C49D5D95BE50B784638984'
 
-New-SCEPmanESTCertificate -Certificate $Certificate -SaveToStore LocalMachine
+New-SCEPmanCertificate -Certificate $Certificate -SaveToStore LocalMachine
 ```
 
 ### CertificateFromFile
 On Linux system a certificate renewal can be performed by passing the paths of the existing certificate and its private key.
 
 ```powershell
-New-SCEPmanESTCertificate -CertificateFromFile '~/certs/myCert.pem' -KeyFromFile '~/certs/myKey.key' -SaveToFolder '~/certs'
+New-SCEPmanCertificate -CertificateFromFile '~/certs/myCert.pem' -KeyFromFile '~/certs/myKey.key' -SaveToFolder '~/certs'
 ```
 
 When using an encrypted private key you will asked for the password. You can also directly pass the keys password using the `PlainTextPassword` parameter.
@@ -81,7 +81,7 @@ When using an encrypted private key you will asked for the password. You can als
 With SSL Profiles enabled, the WAF will terminate the TLS connections. This will in turn break certificate renewals using EST as the procedure relies on mTLS for authentication. In this case the `UseSCEPRenewal` parameter can be used to instead perform a certificate renewal complying with the SCEP protocol.
 
 ```powershell
-New-SCEPmanESTCertificate -CertificateBySubject 'WebServer' -SaveToStore 'LocalMachine' -UseSCEPRenewal
+New-SCEPmanCertificate -CertificateBySubject 'WebServer' -SaveToStore 'LocalMachine' -UseSCEPRenewal
 ```
 
 Please note that this requires additional SCEPman configuration regarding the static SCEP endpoint:
