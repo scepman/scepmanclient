@@ -46,7 +46,13 @@ Function Invoke-SCEPRenewal {
     $Uri = ($Url -replace '/$') + $Endpoint
 
     Write-Verbose "$($MyInvocation.MyCommand): Sending SCEP renewal request to $Uri"
-    $Response = $WebClient.UploadData($Uri, $SignedMessage)
+
+    Try {
+        $Response = $WebClient.UploadData($Uri, $SignedMessage)
+    } Catch {
+        Throw "$($MyInvocation.MyCommand): SCEPRenewal failed on Uri $Uri with error: $($_.Exception.Message) - Please check the SCEP endpoints configuration"
+    }
+
 
     Return Get-CertificateFromSCEPResponse -SCEPResponse $Response -SignerCertificate $RecipientCertificate -RecipientCertificate $SignerCertificate
 }

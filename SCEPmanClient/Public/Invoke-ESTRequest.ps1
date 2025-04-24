@@ -61,10 +61,11 @@ Function Invoke-ESTRequest {
     Write-Verbose "$($MyInvocation.MyCommand): Sending EST request to $Uri"
 
     $Request_Params = @{
-        Uri     = $Uri
-        Method  = 'POST'
-        Headers = $Headers
-        Body    = $Request
+        Uri                = $Uri
+        Method             = 'POST'
+        Headers            = $Headers
+        Body               = $Request
+        SkipHttpErrorCheck = $true
     }
 
     If ($PSBoundParameters.ContainsKey('Credential')) {
@@ -80,6 +81,8 @@ Function Invoke-ESTRequest {
         $CertificateCollection.Import($DERCertificate)
 
         Return $CertificateCollection
+    } ElseIf ($Response.StatusCode -eq 404) {
+        throw "$($MyInvocation.MyCommand): SCEPman EST Request failed: $($Response.StatusCode) - EST endpoint could not be found"
     } Else {
         throw "$($MyInvocation.MyCommand): SCEPman EST Request failed: $($Response.StatusCode)"
     }

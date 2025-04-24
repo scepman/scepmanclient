@@ -27,7 +27,8 @@ Function Get-SCEPmanAccessToken {
         }
     }
     Catch {
-        Throw "$($MyInvocation.MyCommand): Failed to get access token for resource $ResourceUrl"
+        # We are not throwing the actual exception as it likely only tells the user that an interaction is required
+        Throw "$($MyInvocation.MyCommand): Failed to get access token for resource $ResourceUrl - Check your assigned role in this application - Make sure to authorize 1950a258-227b-4e31-a9cf-717495945fc2 (Microsoft Azure PowerShell) to this app registration"
     }
 
     $RawPayload = $Token -split '\.' | Select-Object -Index 1

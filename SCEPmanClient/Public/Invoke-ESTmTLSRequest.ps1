@@ -117,9 +117,12 @@ Function Invoke-ESTmTLSRequest {
             Write-Error "$($MyInvocation.MyCommand): $($ex.GetType()): $($ex.Message)"
         }
     }
-    if ($httpResponseMessage.StatusCode -ne [System.Net.HttpStatusCode]::OK) {
+    If ($httpResponseMessage.StatusCode -eq 'InternalServerError') {
+        throw "$($MyInvocation.MyCommand): Failed to renew certificate. Status code: $($httpResponseMessage.StatusCode) - Check if certificate renewals are allowed on this endpoint and check application logs"
+    } ElseIf ($httpResponseMessage.StatusCode -ne [System.Net.HttpStatusCode]::OK) {
         throw "$($MyInvocation.MyCommand): Failed to renew certificate. Status code: $($httpResponseMessage.StatusCode)"
     }
+
     $Response =  $httpResponseMessage.Content.ReadAsStringAsync().Result
     $client.Dispose()
     $handler.Dispose()
