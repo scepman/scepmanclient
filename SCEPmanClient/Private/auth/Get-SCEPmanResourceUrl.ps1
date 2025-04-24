@@ -29,7 +29,7 @@ Function Get-SCEPmanResourceUrl {
 
     Write-Verbose "$($MyInvocation.MyCommand): Stripped URL: $Url"
 
-    $Application = Get-AzADApplication | Where-Object { $_.Web.HomePageUrl -match 'scepman.coni.rocks' }
+    $Application = Get-AzADApplication | Where-Object { $_.Web.HomePageUrl -match $Url }
 
     If (-not $Application) {
         Write-Error "$($MyInvocation.MyCommand): No application found for AppServiceUrl: $Url - Please check the Home Page URL of the app registration"
