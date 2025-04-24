@@ -87,5 +87,5 @@ New-SCEPmanCertificate -CertificateBySubject 'WebServer' -SaveToStore 'LocalMach
 Please note that this requires additional SCEPman configuration regarding the static SCEP endpoint:
 - AppConfig:StaticValidation:Enabled : true
 - AppConfig:StaticValidation:AllowRenewals : true
-- AppConfig:StaticValidation:ReenrollmentAllowedCertificateTypes: Static
+- AppConfig:StaticValidation:ReenrollmentAllowedCertificateTypes: Static,IntuneUser (Depending on the types intended for renewal)
 
