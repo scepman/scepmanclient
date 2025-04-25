@@ -4,6 +4,7 @@ on: push
 
 permissions:
   security-events: write  # Required to upload SARIF results
+  contents: read  # Required to check out the repository
 
 jobs:
   analyze-powershell-script:
