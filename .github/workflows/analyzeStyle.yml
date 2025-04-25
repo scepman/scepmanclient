@@ -5,6 +5,7 @@ on: push
 permissions:
   security-events: write  # Required to upload SARIF results
   contents: read  # Required to check out the repository
+  actions: read  # Required to get workflow runs, which is needed when uploading SARIF results
 
 jobs:
   analyze-powershell-script:
