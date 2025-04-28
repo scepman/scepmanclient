@@ -28,7 +28,13 @@
   )
 
   FunctionsToExport = @(
-    ''
+    'Get-ESTRootCA',
+    'Invoke-ESTmTLSRequest',
+    'Invoke-ESTRequest',
+    'Invoke-SCEPRenewal',
+    'New-CSR',
+    'New-PrivateKey',
+    'New-SCEPmanCertificate'
   )
 
 }
