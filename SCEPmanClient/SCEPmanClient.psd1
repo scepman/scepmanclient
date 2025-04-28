@@ -16,7 +16,6 @@
       LicenseUri = ''
       ProjectUri = 'https://scepman.com'
       IconUri = 'https://raw.githubusercontent.com/scepman/scepmanclient/main/SCEPmanClient/scepman-icon.png'
-      ExternalModuleDependencies = @('Az.Resources', 'Az.Accounts')
       Prerelease = 'beta'
     }
   }
