@@ -6,11 +6,11 @@ on:
       channel:
         description: 'Release Channel'
         required: true
-        default: 'beta'
+        default: 'releases/beta'
         type: choice
         options:
-          - production
-          - beta
+          - releases/production
+          - releases/beta
           - none
 
 jobs:
