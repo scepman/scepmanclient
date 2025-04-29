@@ -33,7 +33,7 @@ jobs:
         uses: azure/login@v2
         with:
           tenant-id: a53834b7-42bc-46a3-b004-369735c3acf9 # c4a8.onmicrosoft.com
-          client-id: e9310a4f-a6b0-4374-a623-1333cbc62f96 # from Entra ID app registration
+          client-id: b37e9bff-a61d-4005-8dd7-fd7ad91df03b # from Entra ID app registration
           allow-no-subscriptions: true
 
       - name: Azure CLI get token
