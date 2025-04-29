@@ -82,5 +82,7 @@ jobs:
 
       - name: Publish
         run: |
+          Install-Module -Name Az.Accounts -Force
+          Install-Module -Name Az.Resources -Force
           Publish-Module -Path ./SCEPmanClient -NuGetApiKey ${{secrets.PSGalleryAPIKey}}
         shell: pwsh
