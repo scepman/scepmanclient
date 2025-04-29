@@ -44,7 +44,7 @@ jobs:
 
       - name: Create Input File list
         run: |
-          Get-ChildItem -Path .\SCEPman -Recurse -Include *.ps1,SCEPman.psm1,SCEPman.psd1 | Select-Object -ExpandProperty FullName | Out-File -FilePath .\input.txt -Encoding utf8
+          Get-ChildItem -Path .\SCEPmanClient -Recurse -Include *.ps1,SCEPmanClient.psm1,SCEPmanClient.psd1 | Select-Object -ExpandProperty FullName | Out-File -FilePath .\input.txt -Encoding utf8
 
       - name: Sign all PowerShell files
         run: |
@@ -59,7 +59,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Signed Module
-          path: ./SCEPman
+          path: ./SCEPmanClient
 
       - name: Azure CLI logout
         run: |
@@ -78,9 +78,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: Signed Module
-          path: ./SCEPman
+          path: ./SCEPmanClient
 
       - name: Publish
         run: |
-          Publish-Module -Path ./SCEPman -NuGetApiKey ${{secrets.PSGalleryAPIKey}}
+          Publish-Module -Path ./SCEPmanClient -NuGetApiKey ${{secrets.PSGalleryAPIKey}}
         shell: pwsh
