@@ -65,7 +65,11 @@ Function Invoke-ESTRequest {
         Method             = 'POST'
         Headers            = $Headers
         Body               = $Request
-        SkipHttpErrorCheck = $true
+    }
+
+    If ($PSVersionTable.PSVersion.Major -ge 7) {
+        # Only available in PowerShell Core
+        $Request_Params['SkipHttpErrorCheck'] = $true
     }
 
     If ($PSBoundParameters.ContainsKey('Credential')) {

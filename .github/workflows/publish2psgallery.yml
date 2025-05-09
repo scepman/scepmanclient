@@ -6,11 +6,11 @@ on:
       channel:
         description: 'Release Channel'
         required: true
-        default: 'beta'
+        default: 'releases/beta'
         type: choice
         options:
-          - production
-          - beta
+          - releases/production
+          - releases/beta
           - none
 
 jobs:
@@ -33,7 +33,7 @@ jobs:
         uses: azure/login@v2
         with:
           tenant-id: a53834b7-42bc-46a3-b004-369735c3acf9 # c4a8.onmicrosoft.com
-          client-id: e9310a4f-a6b0-4374-a623-1333cbc62f96 # from Entra ID app registration
+          client-id: b37e9bff-a61d-4005-8dd7-fd7ad91df03b # from Entra ID app registration
           allow-no-subscriptions: true
 
       - name: Azure CLI get token
@@ -44,7 +44,7 @@ jobs:
 
       - name: Create Input File list
         run: |
-          Get-ChildItem -Path .\SCEPman -Recurse -Include *.ps1,SCEPman.psm1,SCEPman.psd1 | Select-Object -ExpandProperty FullName | Out-File -FilePath .\input.txt -Encoding utf8
+          Get-ChildItem -Path .\SCEPmanClient -Recurse -Include *.ps1,SCEPmanClient.psm1,SCEPmanClient.psd1 | Select-Object -ExpandProperty FullName | Out-File -FilePath .\input.txt -Encoding utf8
 
       - name: Sign all PowerShell files
         run: |
@@ -59,7 +59,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Signed Module
-          path: ./SCEPman
+          path: ./SCEPmanClient
 
       - name: Azure CLI logout
         run: |
@@ -78,9 +78,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: Signed Module
-          path: ./SCEPman
+          path: ./SCEPmanClient
 
       - name: Publish
         run: |
-          Publish-Module -Path ./SCEPman -NuGetApiKey ${{secrets.PSGalleryAPIKey}}
+          Install-Module -Name Az.Accounts -Force
+          Install-Module -Name Az.Resources -Force
+          Publish-Module -Path ./SCEPmanClient -NuGetApiKey ${{secrets.PSGalleryAPIKey}}
         shell: pwsh
