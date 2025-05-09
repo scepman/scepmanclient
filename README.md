@@ -12,6 +12,12 @@ Add SCEPman's App Service URL to the Home page URL field.
 Go to the `Expose an API` section of the app registration.
 Create a custom scope that can be used to authorize the client ID `1950a258-227b-4e31-a9cf-717495945fc2` (Microsoft Azure PowerShell).
 
+# Installation
+SCEPmanClient is available on the PowerShell Gallery. Use the following command to install the it:
+```powershell
+Install-Module -Name SCEPmanClient
+```
+
 # Usage
 
 ## Use Azure Authentication

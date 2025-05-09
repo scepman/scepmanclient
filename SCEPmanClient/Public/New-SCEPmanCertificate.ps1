@@ -226,7 +226,7 @@ Function New-SCEPmanCertificate {
         }
 
         If($PSCmdlet.ParameterSetName -eq 'AzAuth') {
-            Set-AzConfig -Scope Process -LoginExperienceV2 Off | Out-Null
+            Set-AzConfig -Scope Process -LoginExperienceV2 Off -DisplaySurveyMessage $false | Out-Null
 
             $Connect_Params = @{}
 
