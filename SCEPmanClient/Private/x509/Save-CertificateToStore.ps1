@@ -17,6 +17,9 @@
 .PARAMETER Exportable
     Indicates whether the private key should be exportable.
 
+.PARAMETER UserProtected
+    Indicates whether the private key should be user-protected. This will prompt the user for a confirmation or password when accessing the private key.
+
 .EXAMPLE
     Save-CertificateToStore -Certificate $Certificate -PrivateKey $PrivateKey -StoreName 'CurrentUser'
     Saves the specified certificate and private key to the CurrentUser certificate store.
@@ -33,7 +36,8 @@ Function Save-CertificateToStore {
         [ValidateSet('CurrentUser', 'LocalMachine')]
         [String]$StoreName,
 
-        [Switch]$Exportable
+        [Switch]$Exportable,
+        [Switch]$UserProtected
     )
 
     Switch ($StoreName) {
@@ -64,11 +68,16 @@ Function Save-CertificateToStore {
 
     $PfxBundle = $MergedCertificate.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Pkcs12, $TemporaryPassword)
 
+    $KeyStorageFlags = $KeyStorageFlag -bor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet
+
     If ($PSBoundParameters.ContainsKey('Exportable')) {
-        $KeyStorageFlags = $KeyStorageFlag -bor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet -bor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable
-    } Else {
-        $KeyStorageFlags = $KeyStorageFlag -bor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet
+        $KeyStorageFlags = $KeyStorageFlags -bor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable
     }
+
+    If ($PSBoundParameters.ContainsKey('UserProtected')) {
+        $KeyStorageFlags = $KeyStorageFlags -bor [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::UserProtected
+    }
+
 
     $IssuedCertificateAndKey = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($PfxBundle, $TemporaryPassword, $KeyStorageFlags)
 

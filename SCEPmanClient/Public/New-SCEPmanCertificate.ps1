@@ -94,6 +94,9 @@
 
 .PARAMETER Exportable
     Mark the private key as exportable.
+
+.PARAMETER UserProtected
+    Indicates whether the private key should be user-protected. This will prompt the user for a confirmation or password when accessing the private key.
 #>
 
 Function New-SCEPmanCertificate {
@@ -164,7 +167,8 @@ Function New-SCEPmanCertificate {
 
         [ValidateSet('LocalMachine', 'CurrentUser')]
         [String]$SaveToStore,
-        [Switch]$Exportable
+        [Switch]$Exportable,
+        [Switch]$UserProtected
     )
 
     Begin {
@@ -316,6 +320,7 @@ Function New-SCEPmanCertificate {
             }
 
             If ($PSBoundParameters.ContainsKey('Exportable')) { $SaveToStore_Params['Exportable'] = $true }
+            If ($PSBoundParameters.ContainsKey('UserProtected')) { $SaveToStore_Params['UserProtected'] = $true }
 
             Save-CertificateToStore @SaveToStore_Params
         }
