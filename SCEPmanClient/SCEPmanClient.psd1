@@ -22,7 +22,8 @@
   RequiredModules = @(
     @(
         'Az.Accounts',
-        'Az.Resources'
+        'Az.Resources',
+        'Az.KeyVault'
     )
   )
 
