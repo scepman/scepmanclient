@@ -34,7 +34,8 @@
     'Invoke-SCEPRenewal',
     'New-CSR',
     'New-PrivateKey',
-    'New-SCEPmanCertificate'
+    'New-SCEPmanCertificate',
+    'New-SCEPManKeyVaultCertificate'
   )
 
 }
