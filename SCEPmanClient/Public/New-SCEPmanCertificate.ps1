@@ -38,6 +38,9 @@
 .PARAMETER KeyFromFile
     The path to the private key file to use for authentication.
 
+.PARAMETER Csr
+    An already prepared Csr that should be sent to the EST server.
+
 .PARAMETER UseSCEPRenewal
     Use SCEP renewal to request the certificate.
 
@@ -131,6 +134,8 @@ Function New-SCEPmanCertificate {
         [String]$CertificateFromFile,
         [Parameter(ParameterSetName='CertAuthFromFile')]
         [String]$KeyFromFile,
+
+        [String]$Csr,
 
         [Switch]$UseSCEPRenewal,
 
@@ -278,33 +283,56 @@ Function New-SCEPmanCertificate {
         }
 
         If($PSCmdlet.ParameterSetName -eq 'AzAuth') {
-            $PrivateKey_Params = @{}
-            If($PSBoundParameters.ContainsKey('SignatureAlgorithm')) { $PrivateKey_Params['Algorithm'] = $SignatureAlgorithm }
 
-            $PrivateKey = New-PrivateKey @PrivateKey_Params
+            If($PSBoundParameters.ContainsKey('Csr')) {
+                $Request = $Csr
+            } Else {
+                $PrivateKey_Params = @{}
+                If($PSBoundParameters.ContainsKey('SignatureAlgorithm')) { $PrivateKey_Params['Algorithm'] = $SignatureAlgorithm }
 
-            $Request_Params = @{}
-            If ($PSBoundParameters.ContainsKey('SubjectFromUserContext')) {
-                Write-Verbose "$($MyInvocation.MyCommand): SubjectFromUserContext is set. Using current user context for subject"
-                $Request_Params['Subject'] = "CN=$((Get-AzContext).Account.id)"
-                $Request_Params['UPN'] = (Get-AzContext).Account.id
+                $PrivateKey = New-PrivateKey @PrivateKey_Params
+
+                $Request_Params = @{}
+                If ($PSBoundParameters.ContainsKey('SubjectFromUserContext')) {
+                    Write-Verbose "$($MyInvocation.MyCommand): SubjectFromUserContext is set. Using current user context for subject"
+                    $Request_Params['Subject'] = "CN=$((Get-AzContext).Account.id)"
+                    $Request_Params['UPN'] = (Get-AzContext).Account.id
+                }
+                If ($PSBoundParameters.ContainsKey('SubjectFromHostname')) {
+                    Write-Verbose "$($MyInvocation.MyCommand): SubjectFromHostname is set. Using hostname for subject: $(hostname)"
+                    $Request_Params['Subject'] = "CN=$(hostname)"
+                }
+                If($PSBoundParameters.ContainsKey('Subject')) { $Request_Params['Subject'] = $Subject }
+                If($PSBoundParameters.ContainsKey('UPN')) { $Request_Params['UPN'] = $UPN }
+                If($PSBoundParameters.ContainsKey('Email')) { $Request_Params['Email'] = $Email }
+                If($PSBoundParameters.ContainsKey('DNSName')) { $Request_Params['DNSName'] = $DNSName }
+                If($PSBoundParameters.ContainsKey('URI')) { $Request_Params['URI'] = $URI }
+                If($PSBoundParameters.ContainsKey('IP')) { $Request_Params['IP'] = $IP }
+                If($PSBoundParameters.ContainsKey('ExtendedKeyUsage')) { $Request_Params['ExtendedKeyUsage'] = $ExtendedKeyUsage }
+                If($PSBoundParameters.ContainsKey('ExtendedKeyUsageOid')) { $Request_Params['ExtendedKeyUsageOid'] = $ExtendedKeyUsageOid }
+
+                $Request = New-CSR -PrivateKey $PrivateKey @Request_Params
             }
-            If ($PSBoundParameters.ContainsKey('SubjectFromHostname')) {
-                Write-Verbose "$($MyInvocation.MyCommand): SubjectFromHostname is set. Using hostname for subject: $(hostname)"
-                $Request_Params['Subject'] = "CN=$(hostname)"
-            }
-            If($PSBoundParameters.ContainsKey('Subject')) { $Request_Params['Subject'] = $Subject }
-            If($PSBoundParameters.ContainsKey('UPN')) { $Request_Params['UPN'] = $UPN }
-            If($PSBoundParameters.ContainsKey('Email')) { $Request_Params['Email'] = $Email }
-            If($PSBoundParameters.ContainsKey('DNSName')) { $Request_Params['DNSName'] = $DNSName }
-            If($PSBoundParameters.ContainsKey('URI')) { $Request_Params['URI'] = $URI }
-            If($PSBoundParameters.ContainsKey('IP')) { $Request_Params['IP'] = $IP }
-            If($PSBoundParameters.ContainsKey('ExtendedKeyUsage')) { $Request_Params['ExtendedKeyUsage'] = $ExtendedKeyUsage }
-            If($PSBoundParameters.ContainsKey('ExtendedKeyUsageOid')) { $Request_Params['ExtendedKeyUsageOid'] = $ExtendedKeyUsageOid }
-
-            $Request = New-CSR -PrivateKey $PrivateKey @Request_Params
 
             $NewCertificate = Invoke-ESTRequest -AppServiceUrl $Url -AccessToken $AccessToken -Request $Request
+
+        } ElseIf($PSCmdlet.ParameterSetName -in 'CertAuthFromObject', 'CertAuthFromStore', 'CertAuthFromFile') {
+            $Url = Get-AppServiceUrlFromCertificate -Certificate $Certificate
+
+            $PrivateKey = If($PSCmdlet.ParameterSetName -eq 'CertAuthFromFile') {
+                $Certificate.PrivateKey
+            } Else {
+                New-PrivateKeyFromCertificate -Certificate $Certificate
+            }
+
+            If($UseSCEPRenewal) {
+                $RootCertificate = Get-ESTRootCA -Url $Url
+                $Request = New-CSRfromCertificate -Certificate $Certificate -PrivateKey $PrivateKey -Raw
+                $NewCertificate = Invoke-SCEPRenewal -Url $Url -SignerCertificate $Certificate -RecipientCertificate $RootCertificate -RawRequest $Request
+            } Else {
+                $Request = New-CSRfromCertificate -Certificate $Certificate -PrivateKey $PrivateKey
+                $NewCertificate = Invoke-ESTmTLSRequest -AppServiceUrl $Url -Certificate $Certificate -Request $Request
+            }
         }
 
         If ($PSBoundParameters.ContainsKey('SaveToStore')) {
@@ -348,11 +376,11 @@ Function New-SCEPmanCertificate {
                 If (-not $PSBoundParameters.ContainsKey('KeyFromFile')) {
                     Write-Verbose "$($MyInvocation.MyCommand): Saving private key to folder $SaveToFolder"
                     If ( -not $PSBoundParameters.ContainsKey('NoPassword')) {
-                        Save-PrivateKeyToFile -PrivateKey $PrivateKey -FilePath "$SaveToFolder\$($NewCertificate.Subject).key" -Password (Read-Host -Prompt "Enter password for private key" -AsSecureString)
+                        Save-PrivateKeyToFile -PrivateKey $PrivateKey -FilePath "$SaveToFolder\$($NewCertificate.Subject).key" -Password (Read-Host -Prompt "Enter password for private key" -AsSecureString) -Format $Format
                     } ElseIf ($PSBoundParameters.ContainsKey('PlainTextPassword')) {
-                        Save-PrivateKeyToFile -PrivateKey $PrivateKey -FilePath "$SaveToFolder\$($NewCertificate.Subject).key" -Password ($PlainTextPassword | ConvertTo-SecureString -AsPlainText -Force)
+                        Save-PrivateKeyToFile -PrivateKey $PrivateKey -FilePath "$SaveToFolder\$($NewCertificate.Subject).key" -Password ($PlainTextPassword | ConvertTo-SecureString -AsPlainText -Force) -Format $Format
                     } Else {
-                        Save-PrivateKeyToFile -PrivateKey $PrivateKey -FilePath "$SaveToFolder\$($NewCertificate.Subject).key"
+                        Save-PrivateKeyToFile -PrivateKey $PrivateKey -FilePath "$SaveToFolder\$($NewCertificate.Subject).key" -Format $Format
                     }
                 }
 
@@ -360,10 +388,15 @@ Function New-SCEPmanCertificate {
                     Write-Verbose "$($MyInvocation.MyCommand): Saving root CA certificate to folder $SaveToFolder"
                     $RootCertificate = Get-ESTRootCA -AppServiceUrl $Url
                     Save-CertificateToFile -Certificate $RootCertificate -FilePath "$SaveToFolder\$($RootCertificate.Subject)" -Format $Format
-                }
+                }Y
             }
         }
 
-        Return (Get-MergedCertificate -Certificate $NewCertificate -PrivateKey $PrivateKey)
+        If($PSBoundParameters.ContainsKey('Csr')) {
+            Return $NewCertificate
+        } Else {
+            Return (Get-MergedCertificate -Certificate $NewCertificate -PrivateKey $PrivateKey)
+        }
+
     }
 }
