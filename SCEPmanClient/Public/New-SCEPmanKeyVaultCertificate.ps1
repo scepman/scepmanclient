@@ -48,6 +48,7 @@
 #>
 
 Function New-SCEPmanKeyVaultCertificate {
+    [CmdletBinding()]
     Param(
         [Parameter(ParameterSetName='AzAuth')]
         [Switch]$IgnoreExistingSession,
