@@ -23,7 +23,8 @@
   RequiredModules = @(
     @(
         'Az.Accounts',
-        'Az.Resources'
+        'Az.Resources',
+        'Az.KeyVault'
     )
   )
 
@@ -34,7 +35,8 @@
     'Invoke-SCEPRenewal',
     'New-CSR',
     'New-PrivateKey',
-    'New-SCEPmanCertificate'
+    'New-SCEPmanCertificate',
+    'New-SCEPManKeyVaultCertificate'
   )
 
 }
