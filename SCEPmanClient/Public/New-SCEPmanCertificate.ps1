@@ -92,6 +92,12 @@
 .PARAMETER NoPassword
     Do not use a password for the private key.
 
+.PARAMETER SaveToKeyVault
+    Import the certificate to the given Azure Key Vault.
+
+.PARAMETER KeyVaultCertificateName
+    This is the name of the certificate that should be imported to the Azure Key Vault.
+
 .PARAMETER SaveToStore
     Save the certificate to the certificate store. Possible values are LocalMachine, CurrentUser.
 
@@ -165,7 +171,8 @@ Function New-SCEPmanCertificate {
         [String]$PlainTextPassword,
         [Switch]$NoPassword,
 
-
+        [String]$SaveToKeyVault,
+        [String]$KeyVaultCertificateName,
 
         [ValidateSet('LocalMachine', 'CurrentUser')]
         [String]$SaveToStore,
@@ -390,6 +397,10 @@ Function New-SCEPmanCertificate {
                     Save-CertificateToFile -Certificate $RootCertificate -FilePath "$SaveToFolder\$($RootCertificate.Subject)" -Format $Format
                 }Y
             }
+        }
+
+        If($PSBoundParameters.ContainsKey('SaveToKeyVault')) {
+            Get-MergedCertificate -Certificate $NewCertificate -PrivateKey $PrivateKey | Import-AzKeyVaultCertificate -VaultName $SaveToKeyVault -Name $KeyVaultCertificateName
         }
 
         If($PSBoundParameters.ContainsKey('Csr')) {
