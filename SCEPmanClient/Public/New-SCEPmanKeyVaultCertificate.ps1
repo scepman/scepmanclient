@@ -48,7 +48,7 @@
 #>
 
 Function New-SCEPmanKeyVaultCertificate {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName='AzAuth')]
     Param(
         [Parameter(ParameterSetName='AzAuth')]
         [Switch]$IgnoreExistingSession,
@@ -65,7 +65,11 @@ Function New-SCEPmanKeyVaultCertificate {
         [String[]]$ExtendedKeyUsage = @(),
         [String[]]$ExtendedKeyUsageOID = @(),
 
-        [Parameter(Mandatory)]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='AzAuth',
+            Position=0
+        )]
         [Alias('AppServiceUrl')]
         [String]$Url,
         [Parameter(Mandatory)]
