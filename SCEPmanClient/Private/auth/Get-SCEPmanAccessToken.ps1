@@ -19,11 +19,16 @@ Function Get-SCEPmanAccessToken {
 
     Try {
         Write-Verbose "$($MyInvocation.MyCommand): Getting access token for resource $ResourceUrl"
-        $Token = If ($PSVersionTable.PSVersion.Major -ge 7) {
-            Get-AzAccessToken -ResourceUrl $ResourceUrl -AsSecureString -WarningAction SilentlyContinue | Select-Object -ExpandProperty Token | ConvertFrom-SecureString -AsPlainText
-        } Else {
-            Write-Verbose "$($MyInvocation.MyCommand): Using legacy method to get access token"
-            Get-AzAccessToken -ResourceUrl $ResourceUrl -WarningAction SilentlyContinue | Select-Object -ExpandProperty Token
+        $Token = Get-AzAccessToken -ResourceUrl $ResourceUrl -WarningAction SilentlyContinue | Select-Object -ExpandProperty Token
+
+        If ($Token -is [SecureString]) {
+            If ($PSVersionTable.PSVersion.Major -ge 7) {
+                $Token = $Token | ConvertFrom-SecureString -AsPlainText
+            } Else {
+                Write-Verbose "$($MyInvocation.MyCommand): PowerShell 5 - Using legacy method to convert secure string"
+                $Credential = [PSCredential]::new("AccessToken", $Token)
+                $Token = $Credential.GetNetworkCredential().Password
+            }
         }
     }
     Catch {
