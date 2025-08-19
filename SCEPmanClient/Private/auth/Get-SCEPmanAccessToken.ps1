@@ -36,19 +36,29 @@ Function Get-SCEPmanAccessToken {
         Throw "$($MyInvocation.MyCommand): Failed to get access token for resource $ResourceUrl - Check your assigned role in this application - Make sure to authorize 1950a258-227b-4e31-a9cf-717495945fc2 (Microsoft Azure PowerShell) to this app registration"
     }
 
-    $RawPayload = $Token -split '\.' | Select-Object -Index 1
+    # Check if we can get the JWT claims
+    $Claims = Expand-JWT -Token $Token
 
-    # Add padding if needed
-    While($RawPayload.Length % 4 -ne 0) {
-        $RawPayload += '='
+    If (-not $Claims) {
+        Write-Verbose "$($MyInvocation.MyCommand): Failed to expand JWT. Returning original token."
+        Return $Token
+    } elseif ($Claims -eq 'JWE') {
+        Write-Verbose "$($MyInvocation.MyCommand): Found JWE token. Returning original token."
+        Return $Token
     }
-    $Payload = $RawPayload | ConvertFrom-Base64 | ConvertFrom-Json
 
-    If(($Payload.roles -contains 'CSR.SelfService') -or ($Payload.roles -contains 'CSR.Request.Db')) {
-        Write-Verbose "$($MyInvocation.MyCommand): Found required role in $($Payload.roles)"
+    # Check for roles claim
+    If ($Claims.PSObject.Properties.Name -notcontains 'roles') {
+        Write-Verbose "$($MyInvocation.MyCommand): No roles found in JWT claims. Request might not work as intended."
+        Return $Token
+    }
+
+    # Check if we have the correct roles
+    If(($Claims.roles -contains 'CSR.SelfService') -or ($Claims.roles -contains 'CSR.Request.Db')) {
+        Write-Verbose "$($MyInvocation.MyCommand): Found required role in $($Claims.roles)"
         Return $Token
     } else {
-        Write-Verbose "$($MyInvocation.MyCommand): The token does not have the required role 'CSR.SelfService' or 'CSR.Request.Db' in $($Payload.roles). Request might not work as intended."
+        Write-Verbose "$($MyInvocation.MyCommand): The token does not have the required role 'CSR.SelfService' or 'CSR.Request.Db' in $($Claims.roles). Request might not work as intended."
         Return $Token
     }
 }

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Expand a given JWT to check its validity and extract claims.
+    Expand a given JWT to check its integrity and extract claims.
 
 .DESCRIPTION
     This function takes a JWT, tries to decode and validate it and extracts the claims.
