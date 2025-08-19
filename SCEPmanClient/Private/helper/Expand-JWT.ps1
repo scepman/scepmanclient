@@ -23,7 +23,7 @@ Function Expand-JWT {
 
     # According to RFC7519 Section 7.2.1
     # Validate that the JWT contains at least one period
-    If ([Regex]::Count($Token, '\.') -eq 0) {
+    If (($Token.ToCharArray() | Where-Object { $_ -eq '.' }).Count -eq 0) {
         Write-Verbose "$($MyInvocation.MyCommand): The given token does not contain any periods. Invalid"
         Return $null
     }
