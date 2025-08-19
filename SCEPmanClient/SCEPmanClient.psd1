@@ -4,7 +4,7 @@
 
   RootModule = 'SCEPmanClient.psm1'
   # Version will be set in release branches
-  ModuleVersion = '2.10.4'
+  ModuleVersion = '2.10.5'
   GUID = '4a5f64cc-e043-4d40-baa1-95cbb25ca9e3'
   Author = 'glueckkanja AG'
   Description = 'PowerShell module to interact with SCEPman EST API'
