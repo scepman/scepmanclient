@@ -106,6 +106,13 @@
 
 .PARAMETER UserProtected
     Indicates whether the private key should be user-protected. This will prompt the user for a confirmation or password when accessing the private key.
+
+.PARAMETER ValidityPeriod
+    The validity period of the certificate request.
+
+.PARAMETER ValidityPeriodUnits
+    The units for the validity period of the certificate request.
+
 #>
 
 Function New-SCEPmanCertificate {
@@ -180,7 +187,19 @@ Function New-SCEPmanCertificate {
         [ValidateSet('LocalMachine', 'CurrentUser')]
         [String]$SaveToStore,
         [Switch]$Exportable,
-        [Switch]$UserProtected
+        [Switch]$UserProtected,
+
+        [ValidateSet(
+            'Seconds',
+            'Minutes',
+            'Hours',
+            'Days',
+            'Weeks',
+            'Months',
+            'Years'
+        )]
+        [String]$ValidityPeriod = 'Days',
+        [Int]$ValidityPeriodUnits
     )
 
     Begin {
@@ -321,6 +340,8 @@ Function New-SCEPmanCertificate {
                 If($PSBoundParameters.ContainsKey('IP')) { $Request_Params['IP'] = $IP }
                 If($PSBoundParameters.ContainsKey('ExtendedKeyUsage')) { $Request_Params['ExtendedKeyUsage'] = $ExtendedKeyUsage }
                 If($PSBoundParameters.ContainsKey('ExtendedKeyUsageOid')) { $Request_Params['ExtendedKeyUsageOid'] = $ExtendedKeyUsageOid }
+                If($PSBoundParameters.ContainsKey('ValidityPeriod')) { $Request_Params['ValidityPeriod'] = $ValidityPeriod }
+                If($PSBoundParameters.ContainsKey('ValidityPeriodUnits')) { $Request_Params['ValidityPeriodUnits'] = $ValidityPeriodUnits }
 
                 $Request = New-CSR -PrivateKey $PrivateKey @Request_Params
             }
