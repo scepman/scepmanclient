@@ -223,6 +223,9 @@ Function New-CSR {
     }
 
     If($ValidityPeriodUnits) {
+        # Make sure we have the correct case for the ValidityPeriod
+        $ValidityPeriod = (Get-Culture).TextInfo.ToTitleCase($ValidityPeriod)
+
         $AsnWriter = [System.Formats.Asn1.AsnWriter]::new($constant_Asn1EncodingRuleSet)
 
         # Encode the validity period
