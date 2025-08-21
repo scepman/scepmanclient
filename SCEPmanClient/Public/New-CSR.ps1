@@ -41,6 +41,12 @@
 .PARAMETER UPN
     The User Principal Names to add to the Subject Alternative Name extension.
 
+.PARAMETER ValidityPeriod
+    The validity period of the certificate request.
+
+.PARAMETER ValidityPeriodUnits
+    The units for the validity period of the certificate request.
+
 .PARAMETER Raw
     Return the raw certificate request object instead of the base64 encoded string.
 
@@ -105,6 +111,19 @@ Function New-CSR {
         [String[]]$Email,
         [String[]]$URI,
         [String[]]$UPN,
+
+        [ValidateSet(
+            'Seconds',
+            'Minutes',
+            'Hours',
+            'Days',
+            'Weeks',
+            'Months',
+            'Years'
+        )]
+        [String]$ValidityPeriod = 'Days',
+        [Int]$ValidityPeriodUnits,
+
 
         [Switch]$Raw
     )
@@ -201,6 +220,31 @@ Function New-CSR {
         $SANExtension = $SANBuilder.Build()
         $Request.CertificateExtensions.Add($SANExtension)
 
+    }
+
+    If($ValidityPeriodUnits) {
+        $AsnWriter = [System.Formats.Asn1.AsnWriter]::new($constant_Asn1EncodingRuleSet)
+
+        # Encode the validity period
+        $AsnWriter.PushSequence($constant_Asn1SequenceTag) | Out-Null
+        $AsnWriter.WriteCharacterString($constant_Asn1BMPStringTag, "ValidityPeriod")
+        $AsnWriter.WriteCharacterString($constant_Asn1BMPStringTag, $ValidityPeriod)
+        $AsnWriter.PopSequence()
+
+        $ValidityPeriodObject = [System.Security.Cryptography.AsnEncodedData]::new($constant_EnrollmentKeyValuePairOid, $AsnWriter.Encode())
+        $AsnWriter.Reset()
+
+        # Encode the validity period units
+        $AsnWriter.PushSequence($constant_Asn1SequenceTag) | Out-Null
+        $AsnWriter.WriteCharacterString($constant_Asn1BMPStringTag, "ValidityPeriodUnits")
+        $AsnWriter.WriteCharacterString($constant_Asn1BMPStringTag, $ValidityPeriodUnits)
+        $AsnWriter.PopSequence()
+
+        $ValidityPeriodUnitsObject = [System.Security.Cryptography.AsnEncodedData]::new($constant_EnrollmentKeyValuePairOid, $AsnWriter.Encode())
+        $AsnWriter.Reset()
+
+        $Request.OtherRequestAttributes.Add($ValidityPeriodObject)
+        $Request.OtherRequestAttributes.Add($ValidityPeriodUnitsObject)
     }
 
     If($Raw) {
