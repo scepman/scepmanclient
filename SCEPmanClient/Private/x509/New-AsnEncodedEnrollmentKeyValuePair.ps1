@@ -1,3 +1,25 @@
+<#
+.SYNOPSIS
+    Create a new ASN.1 encoded enrollment key-value pair.
+
+.DESCRIPTION
+    Create a new ASN.1 encoded enrollment key-value pair using the specified parameters.
+
+.PARAMETER Name
+    The name of the enrollment key-value pair.
+
+.PARAMETER Value
+    The value of the enrollment key-value pair.
+
+.EXAMPLE
+    New-AsnEncodedEnrollmentKeyValuePair -Name 'Key1' -Value 'Value1'
+    Create a new ASN.1 encoded enrollment key-value pair with the specified name and value.
+
+.OUTPUTS
+    [System.Security.Cryptography.AsnEncodedData]
+    The ASN.1 encoded enrollment key-value pair.
+#>
+
 Function New-AsnEncodedEnrollmentKeyValuePair {
     [CmdletBinding()]
     Param(
