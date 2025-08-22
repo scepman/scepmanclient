@@ -112,16 +112,7 @@ Function New-CSR {
         [String[]]$URI,
         [String[]]$UPN,
 
-        [ValidateSet(
-            'Seconds',
-            'Minutes',
-            'Hours',
-            'Days',
-            'Weeks',
-            'Months',
-            'Years'
-        )]
-        [String]$ValidityPeriod = 'Days',
+        [ValidityPeriod]$ValidityPeriod = [ValidityPeriod]::Days,
         [Int]$ValidityPeriodUnits,
 
 
@@ -222,29 +213,17 @@ Function New-CSR {
 
     }
 
+    If (($PSVersionTable.PSEdition -ne 'Core') -and $ValidityPeriodUnits) {
+        Write-Error "$($MyInvocation.MyCommand): The certificate validity cannot be defined in Windows PowerShell"
+        Return
+    }
+
     If($ValidityPeriodUnits) {
         # Make sure we have the correct case for the ValidityPeriod
         $ValidityPeriod = (Get-Culture).TextInfo.ToTitleCase($ValidityPeriod)
 
-        $AsnWriter = [System.Formats.Asn1.AsnWriter]::new($constant_Asn1EncodingRuleSet)
-
-        # Encode the validity period
-        $AsnWriter.PushSequence($constant_Asn1SequenceTag) | Out-Null
-        $AsnWriter.WriteCharacterString($constant_Asn1BMPStringTag, "ValidityPeriod")
-        $AsnWriter.WriteCharacterString($constant_Asn1BMPStringTag, $ValidityPeriod)
-        $AsnWriter.PopSequence()
-
-        $ValidityPeriodObject = [System.Security.Cryptography.AsnEncodedData]::new($constant_EnrollmentKeyValuePairOid, $AsnWriter.Encode())
-        $AsnWriter.Reset()
-
-        # Encode the validity period units
-        $AsnWriter.PushSequence($constant_Asn1SequenceTag) | Out-Null
-        $AsnWriter.WriteCharacterString($constant_Asn1BMPStringTag, "ValidityPeriodUnits")
-        $AsnWriter.WriteCharacterString($constant_Asn1BMPStringTag, $ValidityPeriodUnits)
-        $AsnWriter.PopSequence()
-
-        $ValidityPeriodUnitsObject = [System.Security.Cryptography.AsnEncodedData]::new($constant_EnrollmentKeyValuePairOid, $AsnWriter.Encode())
-        $AsnWriter.Reset()
+        $ValidityPeriodObject = New-AsnEncodedEnrollmentKeyValuePair -Name "ValidityPeriod" -Value $ValidityPeriod
+        $ValidityPeriodUnitsObject = New-AsnEncodedEnrollmentKeyValuePair -Name "ValidityPeriodUnits" -Value $ValidityPeriodUnits
 
         $Request.OtherRequestAttributes.Add($ValidityPeriodObject)
         $Request.OtherRequestAttributes.Add($ValidityPeriodUnitsObject)

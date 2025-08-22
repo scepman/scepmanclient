@@ -189,16 +189,7 @@ Function New-SCEPmanCertificate {
         [Switch]$Exportable,
         [Switch]$UserProtected,
 
-        [ValidateSet(
-            'Seconds',
-            'Minutes',
-            'Hours',
-            'Days',
-            'Weeks',
-            'Months',
-            'Years'
-        )]
-        [String]$ValidityPeriod = 'Days',
+        [ValidityPeriod]$ValidityPeriod = [ValidityPeriod]::Days,
         [Int]$ValidityPeriodUnits
     )
 
