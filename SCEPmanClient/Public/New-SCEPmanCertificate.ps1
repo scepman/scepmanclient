@@ -400,7 +400,7 @@ Function New-SCEPmanCertificate {
                     Write-Verbose "$($MyInvocation.MyCommand): Saving root CA certificate to folder $SaveToFolder"
                     $RootCertificate = Get-ESTRootCA -AppServiceUrl $Url
                     Save-CertificateToFile -Certificate $RootCertificate -FilePath "$SaveToFolder\$($RootCertificate.Subject)" -Format $Format
-                }Y
+                }
             }
         }
 
