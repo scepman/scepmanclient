@@ -14,7 +14,7 @@
 
 function ConvertFrom-SecureStringLegacy {
     [CmdletBinding()]
-
+    [OutputType([String])]
     Param(
         [Parameter(Mandatory, ValueFromPipeline)]
         [SecureString]$SecureString
