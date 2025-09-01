@@ -24,6 +24,7 @@
 #>
 
 Function New-Pkcs7SignedMessage {
+    [Diagnostics.CodeAnalysis.SuppressMessage("PSShouldProcess", "", Justification = "Function does not change system state or interact with external systems.")]
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory)]

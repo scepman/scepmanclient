@@ -54,6 +54,7 @@
 #>
 
 Function New-CSR {
+    [Diagnostics.CodeAnalysis.SuppressMessage("PSShouldProcess", "", Justification = "Function does not change system state or interact with external systems.")]
     Param(
         [Parameter(Mandatory)]
         [String]$Subject,

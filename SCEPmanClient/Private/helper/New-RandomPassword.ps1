@@ -7,6 +7,8 @@
 #>
 
 Function New-RandomPassword {
+    [Diagnostics.CodeAnalysis.SuppressMessage("PSShouldProcess", "", Justification = "Function does not change system state or interact with external systems.")]
+
     $securePassword = [System.Security.SecureString]::new()
     $random = [System.Security.Cryptography.RandomNumberGenerator]::Create()
     $bytes = [byte[]]::new(16)
