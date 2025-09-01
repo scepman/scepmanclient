@@ -136,6 +136,16 @@ Function New-CSR {
         }
     }
 
+    If ($KeyUsageOid) {
+        $KeyUsageOid | ForEach-Object {
+            Write-Verbose "$($MyInvocation.MyCommand): Adding Key Usage by OID: $_"
+
+            $Extension = New-Object System.Security.Cryptography.X509Certificates.X509KeyUsageExtension
+            $Extension.Oid = $_
+            $Request.CertificateExtensions.Add($Extension)
+        }
+    }
+
     If ($ExtendedKeyUsage -or $ExtendedKeyUsageOid) {
         $OidCollection = New-Object System.Security.Cryptography.OidCollection
 
