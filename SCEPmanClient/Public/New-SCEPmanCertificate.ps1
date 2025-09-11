@@ -17,6 +17,9 @@
 .PARAMETER DeviceCode
     Use device code authentication.
 
+.PARAMETER Identity
+    Use the managed identity for authentication.
+
 .PARAMETER ClientId
     The client ID for service principal authentication.
 
@@ -128,6 +131,8 @@ Function New-SCEPmanCertificate {
         [Switch]$IgnoreExistingSession,
         [Parameter(ParameterSetName='AzAuth')]
         [Switch]$DeviceCode,
+        [Parameter(ParameterSetName='AzAuth')]
+        [Switch]$Identity,
         [Parameter(ParameterSetName='AzAuth')]
         [String]$ClientId,
         [Parameter(ParameterSetName='AzAuth')]
@@ -248,6 +253,7 @@ Function New-SCEPmanCertificate {
 
             If ($PSBoundParameters.ContainsKey('IgnoreExistingSession')) { $Connect_Params['IgnoreExistingSession'] = $true }
             If ($PSBoundParameters.ContainsKey('DeviceCode')) { $Connect_Params['DeviceCode'] = $true }
+            If ($PSBoundParameters.ContainsKey('Identity')) { $Connect_Params['Identity'] = $true }
             If ($PSBoundParameters.ContainsKey('ClientId')) { $Connect_Params['ClientId'] = $ClientId }
             If ($PSBoundParameters.ContainsKey('TenantId')) { $Connect_Params['TenantId'] = $TenantId }
             If ($PSBoundParameters.ContainsKey('ClientSecret')) { $Connect_Params['ClientSecret'] = $ClientSecret }
