@@ -115,7 +115,6 @@ Function New-CSR {
         [ValidityPeriod]$ValidityPeriod = [ValidityPeriod]::Days,
         [Int]$ValidityPeriodUnits,
 
-
         [Switch]$Raw
     )
 
