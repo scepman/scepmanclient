@@ -41,6 +41,12 @@
 .PARAMETER UPN
     The User Principal Names to add to the Subject Alternative Name extension.
 
+.PARAMETER ValidityPeriod
+    The validity period of the certificate request.
+
+.PARAMETER ValidityPeriodUnits
+    The units for the validity period of the certificate request.
+
 .PARAMETER Raw
     Return the raw certificate request object instead of the base64 encoded string.
 
@@ -105,6 +111,9 @@ Function New-CSR {
         [String[]]$Email,
         [String[]]$URI,
         [String[]]$UPN,
+
+        [ValidityPeriod]$ValidityPeriod = [ValidityPeriod]::Days,
+        [Int]$ValidityPeriodUnits,
 
         [Switch]$Raw
     )
@@ -201,6 +210,22 @@ Function New-CSR {
         $SANExtension = $SANBuilder.Build()
         $Request.CertificateExtensions.Add($SANExtension)
 
+    }
+
+    If (($PSVersionTable.PSEdition -ne 'Core') -and $ValidityPeriodUnits) {
+        Write-Error "$($MyInvocation.MyCommand): The certificate validity cannot be defined in Windows PowerShell"
+        Return
+    }
+
+    If($ValidityPeriodUnits) {
+        # Make sure we have the correct case for the ValidityPeriod
+        $ValidityPeriod = (Get-Culture).TextInfo.ToTitleCase($ValidityPeriod.ToString())
+
+        $ValidityPeriodObject = New-AsnEncodedEnrollmentKeyValuePair -Name "ValidityPeriod" -Value $ValidityPeriod
+        $ValidityPeriodUnitsObject = New-AsnEncodedEnrollmentKeyValuePair -Name "ValidityPeriodUnits" -Value $ValidityPeriodUnits
+
+        $Request.OtherRequestAttributes.Add($ValidityPeriodObject)
+        $Request.OtherRequestAttributes.Add($ValidityPeriodUnitsObject)
     }
 
     If($Raw) {
