@@ -37,3 +37,11 @@ Set-Variable -Option Constant -Name constant_MD5Oid -Value ([System.Security.Cry
 Set-Variable -Option Constant -Name constant_TransactionIdOid -Value ([System.Security.Cryptography.Oid]::new('2.16.840.1.113733.1.9.7'))
 Set-Variable -Option Constant -Name constant_SenderNonceOid -Value ([System.Security.Cryptography.Oid]::new('2.16.840.1.113733.1.9.5'))
 
+enum ValidityPeriod {
+    # Minutes # Supported only by SCEPman 2.12 and later
+    # Hours # Supported only by SCEPman 2.12 and later
+    Days
+    Weeks
+    Months
+    Years
+}
