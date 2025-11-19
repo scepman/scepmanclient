@@ -219,7 +219,7 @@ Function New-CSR {
 
     If($ValidityPeriodUnits) {
         # Make sure we have the correct case for the ValidityPeriod
-        $ValidityPeriod = (Get-Culture).TextInfo.ToTitleCase($ValidityPeriod)
+        $ValidityPeriod = (Get-Culture).TextInfo.ToTitleCase($ValidityPeriod.ToString())
 
         $ValidityPeriodObject = New-AsnEncodedEnrollmentKeyValuePair -Name "ValidityPeriod" -Value $ValidityPeriod
         $ValidityPeriodUnitsObject = New-AsnEncodedEnrollmentKeyValuePair -Name "ValidityPeriodUnits" -Value $ValidityPeriodUnits
