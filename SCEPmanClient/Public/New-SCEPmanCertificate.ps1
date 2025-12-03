@@ -17,6 +17,9 @@
 .PARAMETER DeviceCode
     Use device code authentication.
 
+.PARAMETER Identity
+    Use the managed identity for authentication.
+
 .PARAMETER ClientId
     The client ID for service principal authentication.
 
@@ -106,6 +109,13 @@
 
 .PARAMETER UserProtected
     Indicates whether the private key should be user-protected. This will prompt the user for a confirmation or password when accessing the private key.
+
+.PARAMETER ValidityPeriod
+    The validity period of the certificate request.
+
+.PARAMETER ValidityPeriodUnits
+    The units for the validity period of the certificate request.
+
 #>
 
 Function New-SCEPmanCertificate {
@@ -128,6 +138,8 @@ Function New-SCEPmanCertificate {
         [Switch]$IgnoreExistingSession,
         [Parameter(ParameterSetName='AzAuth')]
         [Switch]$DeviceCode,
+        [Parameter(ParameterSetName='AzAuth')]
+        [Switch]$Identity,
         [Parameter(ParameterSetName='AzAuth')]
         [String]$ClientId,
         [Parameter(ParameterSetName='AzAuth')]
@@ -180,7 +192,10 @@ Function New-SCEPmanCertificate {
         [ValidateSet('LocalMachine', 'CurrentUser')]
         [String]$SaveToStore,
         [Switch]$Exportable,
-        [Switch]$UserProtected
+        [Switch]$UserProtected,
+
+        [ValidityPeriod]$ValidityPeriod = [ValidityPeriod]::Days,
+        [Int]$ValidityPeriodUnits
     )
 
     Begin {
@@ -248,6 +263,7 @@ Function New-SCEPmanCertificate {
 
             If ($PSBoundParameters.ContainsKey('IgnoreExistingSession')) { $Connect_Params['IgnoreExistingSession'] = $true }
             If ($PSBoundParameters.ContainsKey('DeviceCode')) { $Connect_Params['DeviceCode'] = $true }
+            If ($PSBoundParameters.ContainsKey('Identity')) { $Connect_Params['Identity'] = $true }
             If ($PSBoundParameters.ContainsKey('ClientId')) { $Connect_Params['ClientId'] = $ClientId }
             If ($PSBoundParameters.ContainsKey('TenantId')) { $Connect_Params['TenantId'] = $TenantId }
             If ($PSBoundParameters.ContainsKey('ClientSecret')) { $Connect_Params['ClientSecret'] = $ClientSecret }
@@ -321,6 +337,8 @@ Function New-SCEPmanCertificate {
                 If($PSBoundParameters.ContainsKey('IP')) { $Request_Params['IP'] = $IP }
                 If($PSBoundParameters.ContainsKey('ExtendedKeyUsage')) { $Request_Params['ExtendedKeyUsage'] = $ExtendedKeyUsage }
                 If($PSBoundParameters.ContainsKey('ExtendedKeyUsageOid')) { $Request_Params['ExtendedKeyUsageOid'] = $ExtendedKeyUsageOid }
+                If($PSBoundParameters.ContainsKey('ValidityPeriod')) { $Request_Params['ValidityPeriod'] = $ValidityPeriod }
+                If($PSBoundParameters.ContainsKey('ValidityPeriodUnits')) { $Request_Params['ValidityPeriodUnits'] = $ValidityPeriodUnits }
 
                 $Request = New-CSR -PrivateKey $PrivateKey @Request_Params
             }
