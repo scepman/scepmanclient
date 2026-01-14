@@ -164,11 +164,11 @@ Function New-SCEPmanCertificate {
         [Switch]$SubjectFromHostname,
 
         [String]$Subject,
-        [String]$UPN,
-        [String]$Email,
-        [String]$DNSName,
-        [String]$URI,
-        [String]$IP,
+        [String[]]$UPN,
+        [String[]]$Email,
+        [String[]]$DNSName,
+        [String[]]$URI,
+        [String[]]$IP,
 
         [ValidateSet('RSA', 'ECDSA')]
         [String]$SignatureAlgorithm,
