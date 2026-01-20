@@ -30,7 +30,7 @@ Function Get-AppServiceUrlFromCertificate {
         }
 
         $Encoding = New-Object System.Text.UTF8Encoding
-        $AppServiceUrl = [Regex]::Match($Encoding.GetString($AiaExtension.RawData), 'https://.*?GetCACert').Value
+        $AppServiceUrl = [Regex]::Match($Encoding.GetString($AiaExtension.RawData), 'https://.*?(GetCACert|ca)').Value
 
         if ([string]::IsNullOrEmpty($AppServiceUrl)) {
             throw "$($MyInvocation.MyCommand): Certificate does not have any CA Issuers URLs in the AIA extension to infer AppServiceUrl from."
