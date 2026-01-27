@@ -81,20 +81,7 @@ Function New-CSR {
         [String[]]$ExtendedKeyUsage,
         [String[]]$ExtendedKeyUsageOid,
 
-
-        [ValidateSet(
-            'DigitalSignature',
-            'NonRepudiation',
-            'KeyEncipherment',
-            'DataEncipherment',
-            'KeyAgreement',
-            'KeyCertSign',
-            'CRLSign',
-            'EncipherOnly',
-            'DecipherOnly'
-        )]
-        [String[]]$KeyUsage,
-        [String[]]$KeyUsageOid,
+        [KeyUsage[]]$KeyUsage,
 
         [Parameter(Mandatory)]
         $PrivateKey,
@@ -131,12 +118,13 @@ Function New-CSR {
 
     If ($KeyUsage) {
         $KeyUsages = $KeyUsage | ForEach-Object {
+            $KeyUsageName = $_.ToString()
             # Verify that only compatible key usages are considered
-            $KeyUsageDefinition = $constant_KUDefinition[$_]
+            $KeyUsageDefinition = $constant_KUDefinition[$KeyUsageName]
             If($KeyUsageDefinition.KeyTypes -notcontains $UsedAlgorithm) {
                 Write-Verbose "$($MyInvocation.MyCommand): Key usage $_ is not supported for algorithm $UsedAlgorithm"
             } Else {
-                Write-Output $_
+                Write-Output $KeyUsageName
             }
         }
 
