@@ -130,18 +130,24 @@ Function New-CSR {
     }
 
     If ($KeyUsage) {
-        $KeyUsage | ForEach-Object {
-            Write-Verbose "$($MyInvocation.MyCommand): Adding Key Usage $_"
+        $KeyUsages = $KeyUsage | ForEach-Object {
+            # Verify that only compatible key usages are considered
             $KeyUsageDefinition = $constant_KUDefinition[$_]
             If($KeyUsageDefinition.KeyTypes -notcontains $UsedAlgorithm) {
                 Write-Verbose "$($MyInvocation.MyCommand): Key usage $_ is not supported for algorithm $UsedAlgorithm"
             } Else {
-                $Extension = New-Object System.Security.Cryptography.X509Certificates.X509KeyUsageExtension
-                $Oid = $constant_KUDefinition[$_].Oid
-                $Extension.Oid = $Oid
-                $Request.CertificateExtensions.Add($Extension)
+                Write-Output $_
             }
         }
+
+        Write-Verbose "Adding Key Usages: $KeyUsages"
+
+        $KeyUsageExtension = [System.Security.Cryptography.X509Certificates.X509KeyUsageExtension]::new(
+            [System.Security.Cryptography.X509Certificates.X509KeyUsageFlags] $KeyUsages,
+            $true # Critical
+        )
+
+        $Request.CertificateExtensions.Add($KeyUsageExtension)
     }
 
     If ($ExtendedKeyUsage -or $ExtendedKeyUsageOid) {
