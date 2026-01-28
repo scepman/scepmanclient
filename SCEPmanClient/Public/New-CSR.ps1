@@ -128,7 +128,7 @@ Function New-CSR {
             }
         }
 
-        Write-Verbose "Adding Key Usages: $KeyUsages"
+        Write-Verbose "Adding Key Usage: $KeyUsages"
 
         $KeyUsageExtension = [System.Security.Cryptography.X509Certificates.X509KeyUsageExtension]::new(
             [System.Security.Cryptography.X509Certificates.X509KeyUsageFlags] $KeyUsages,
