@@ -379,6 +379,9 @@ Function New-SCEPmanCertificate {
         }
 
         If ($PSBoundParameters.ContainsKey('SaveToFolder')) {
+            # Sanitize folder path
+            $SaveToFolder = (Resolve-Path -Path $SaveToFolder).Path
+
             If ($Format -eq 'PFX') {
                 $MergedCertificate = Get-MergedCertificate -Certificate $NewCertificate -PrivateKey $PrivateKey
 
