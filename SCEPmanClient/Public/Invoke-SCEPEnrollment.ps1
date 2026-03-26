@@ -44,6 +44,11 @@ Function Invoke-SCEPEnrollment {
 
     $Uri = ($Url -replace '/$') + $Endpoint
 
+    # Append https scheme if not present, as webclient does not support scheme-less URLs / treats them as file paths
+    If ($Uri -notmatch '^https?://') {
+        $Uri = 'https://' + $Uri
+    }
+
     Write-Verbose "$($MyInvocation.MyCommand): Sending SCEP enrollment request to $Uri"
 
     Try {
