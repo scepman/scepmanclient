@@ -169,7 +169,7 @@ Function New-SCEPmanCertificate {
         [Parameter(Mandatory, ParameterSetName='SCEPEnrollment')]
         [Switch]$UseSCEPEnrollment,
         [Parameter(Mandatory, ParameterSetName='SCEPEnrollment')]
-        [String]$ChallengePassword,
+        [SecureString]$ChallengePassword,
 
         [Switch]$SubjectFromUserContext,
         [Switch]$SubjectFromHostname,
@@ -376,7 +376,7 @@ Function New-SCEPmanCertificate {
 
             $Request_Params = @{
                 'Raw' = $true
-                'ChallengePassword' = $ChallengePassword
+                'ChallengePassword' = $ChallengePassword | ConvertFrom-SecureString -AsPlainText
             }
             If ($PSBoundParameters.ContainsKey('SubjectFromHostname')) {
                 Write-Verbose "$($MyInvocation.MyCommand): SubjectFromHostname is set. Using hostname for subject: $(hostname)"
