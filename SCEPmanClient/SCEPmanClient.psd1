@@ -31,6 +31,7 @@
     'Get-ESTRootCA',
     'Invoke-ESTmTLSRequest',
     'Invoke-ESTRequest',
+    'Invoke-SCEPEnrollment',
     'Invoke-SCEPRenewal',
     'New-CSR',
     'New-PrivateKey',
