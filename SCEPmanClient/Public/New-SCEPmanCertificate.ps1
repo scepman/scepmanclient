@@ -131,6 +131,7 @@ Function New-SCEPmanCertificate {
         )]
         [Alias('AppServiceUrl')]
         [String]$Url,
+        [String]$Endpoint,
         [Parameter(ParameterSetName='AzAuth')]
         [String]$ResourceUrl,
 
@@ -281,31 +282,34 @@ Function New-SCEPmanCertificate {
 
     Process {
 
-        If($PSCmdlet.ParameterSetName -in 'CertAuthFromObject', 'CertAuthFromStore') {
+        If($PSCmdlet.ParameterSetName -in 'CertAuthFromObject', 'CertAuthFromStore', 'CertAuthFromFile') {
             $Url = Get-AppServiceUrlFromCertificate -Certificate $Certificate
-            $PrivateKey = New-PrivateKeyFromCertificate -Certificate $Certificate
 
-            If($UseSCEPRenewal) {
-                $RootCertificate = Get-ESTRootCA -Url $Url
-                $Request = New-CSRfromCertificate -Certificate $Certificate -PrivateKey $PrivateKey -Raw
-                $NewCertificate = Invoke-SCEPRenewal -Url $Url -SignerCertificate $Certificate -RecipientCertificate $RootCertificate -RawRequest $Request
+            $PrivateKey = If($PSCmdlet.ParameterSetName -eq 'CertAuthFromFile') {
+                $Certificate.PrivateKey
             } Else {
-                $Request = New-CSRfromCertificate -Certificate $Certificate -PrivateKey $PrivateKey
-                $NewCertificate = Invoke-ESTmTLSRequest -AppServiceUrl $Url -Certificate $Certificate -Request $Request
+                New-PrivateKeyFromCertificate -Certificate $Certificate
             }
-        }
-
-        If($PSCmdlet.ParameterSetName -eq 'CertAuthFromFile') {
-            $Url = Get-AppServiceUrlFromCertificate -Certificate $Certificate
-            $PrivateKey = $Certificate.PrivateKey
 
             If($UseSCEPRenewal) {
-                $RootCertificate = Get-ESTRootCA -Url $Url
-                $Request = New-CSRfromCertificate -Certificate $Certificate -PrivateKey $PrivateKey -Raw
-                $NewCertificate = Invoke-SCEPRenewal -Url $Url -SignerCertificate $Certificate -RecipientCertificate $RootCertificate -RawRequest $Request
+                $Cert_Request_Params = @{
+                    'Url' = $Url
+                    'SignerCertificate' = $Certificate
+                    'RecipientCertificate' = Get-SCEPmanRootCA -Url $Url
+                    'RawRequest' = New-CSRfromCertificate -Certificate $Certificate -PrivateKey $PrivateKey -Raw
+                }
+                If($PSBoundParameters.ContainsKey('Endpoint')) { $Cert_Request_Params['Endpoint'] = $Endpoint }
+
+                $NewCertificate = Invoke-SCEPRenewal @Cert_Request_Params
             } Else {
-                $Request = New-CSRfromCertificate -Certificate $Certificate -PrivateKey $PrivateKey
-                $NewCertificate = Invoke-ESTmTLSRequest -AppServiceUrl $Url -Certificate $Certificate -Request $Request
+                $Cert_Request_Params = @{
+                    'AppServiceUrl' = $Url
+                    'Certificate' = $Certificate
+                    'Request' = New-CSRfromCertificate -Certificate $Certificate -PrivateKey $PrivateKey
+                }
+                If($PSBoundParameters.ContainsKey('Endpoint')) { $Cert_Request_Params['Endpoint'] = $Endpoint }
+
+                $NewCertificate = Invoke-ESTmTLSRequest @Cert_Request_Params
             }
         }
 
@@ -419,7 +423,7 @@ Function New-SCEPmanCertificate {
 
                 If (-not $PSBoundParameters.ContainsKey('IncludeRootCA')) {
                     Write-Verbose "$($MyInvocation.MyCommand): Saving root CA certificate to folder $SaveToFolder"
-                    $RootCertificate = Get-ESTRootCA -AppServiceUrl $Url
+                    $RootCertificate = Get-SCEPmanRootCA -AppServiceUrl $Url
                     Save-CertificateToFile -Certificate $RootCertificate -FilePath "$SaveToFolder\$($RootCertificate.Subject)" -Format $Format
                 }
             }
