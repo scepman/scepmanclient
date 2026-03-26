@@ -115,6 +115,8 @@ Function New-CSR {
         [ValidityPeriod]$ValidityPeriod = [ValidityPeriod]::Days,
         [Int]$ValidityPeriodUnits,
 
+        [String]$ChallengePassword,
+
         [Switch]$Raw
     )
 
@@ -226,6 +228,19 @@ Function New-CSR {
 
         $Request.OtherRequestAttributes.Add($ValidityPeriodObject)
         $Request.OtherRequestAttributes.Add($ValidityPeriodUnitsObject)
+    }
+
+    If ($ChallengePassword) {
+        If ($PSVersionTable.PSEdition -ne 'Core') {
+            Write-Error "$($MyInvocation.MyCommand): ChallengePassword is not supported in Windows PowerShell"
+            Return
+        }
+
+        $ChallengePasswordBody = ([System.Text.Encoding]::ASCII).GetBytes($ChallengePassword)
+        $ChallengePasswordHeader = [Byte[]]@([Byte]0x13, [Byte]$ChallengePasswordBody.Length)
+        $ChallengePasswordData = $ChallengePasswordHeader + $ChallengePasswordBody
+        $ChallengePasswordAttribute = [System.Security.Cryptography.AsnEncodedData]::new($constant_ChallengePasswordOid, $ChallengePasswordData)
+        $Request.OtherRequestAttributes.Add($ChallengePasswordAttribute)
     }
 
     If($Raw) {

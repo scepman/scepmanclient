@@ -36,6 +36,7 @@ Set-Variable -Option Constant -Name constant_MessageTypeOid -Value ([System.Secu
 Set-Variable -Option Constant -Name constant_MD5Oid -Value ([System.Security.Cryptography.Oid]::new('1.2.840.113549.2.5', 'digestAlgorithm'))
 Set-Variable -Option Constant -Name constant_TransactionIdOid -Value ([System.Security.Cryptography.Oid]::new('2.16.840.1.113733.1.9.7'))
 Set-Variable -Option Constant -Name constant_SenderNonceOid -Value ([System.Security.Cryptography.Oid]::new('2.16.840.1.113733.1.9.5'))
+Set-Variable -Option Constant -Name constant_ChallengePasswordOid -Value ([System.Security.Cryptography.Oid]::new('1.2.840.113549.1.9.7', 'challengePassword'))
 
 enum ValidityPeriod {
     # Minutes # Supported only by SCEPman 2.12 and later
