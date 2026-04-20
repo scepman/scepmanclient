@@ -15,7 +15,9 @@ Describe "New-CSR" {
         New-CSR -PrivateKey $Key -Subject "CN=Test" -Raw | Should -BeOfType [System.Security.Cryptography.X509Certificates.CertificateRequest]
     }
 
-    It "should return a valid CSR with custom attributes" {
-        New-CSR -PrivateKey (New-PrivateKey) -Subject "CN=Test" -ExtendedKeyUsage ClientAuth, ServerAuth -KeyUsage KeyEncipherment, DigitalSignature -Raw | Should -BeOfType [System.Security.Cryptography.X509Certificates.CertificateRequest]
+    It "should return a valid CSR with validatable key usages" {
+        $Request = New-CSR -PrivateKey (New-PrivateKey) -Subject "CN=Test" -ExtendedKeyUsage ClientAuth, ServerAuth -KeyUsage KeyEncipherment, DigitalSignature -Raw
+
+        $Request.CertificateExtensions.KeyUsages | Should -BeExactly 'KeyEncipherment, DigitalSignature'
     }
 }

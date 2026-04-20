@@ -81,20 +81,7 @@ Function New-CSR {
         [String[]]$ExtendedKeyUsage,
         [String[]]$ExtendedKeyUsageOid,
 
-
-        [ValidateSet(
-            'DigitalSignature',
-            'NonRepudiation',
-            'KeyEncipherment',
-            'DataEncipherment',
-            'KeyAgreement',
-            'KeyCertSign',
-            'CRLSign',
-            'EncipherOnly',
-            'DecipherOnly'
-        )]
-        [String[]]$KeyUsage,
-        [String[]]$KeyUsageOid,
+        [KeyUsage[]]$KeyUsage,
 
         [Parameter(Mandatory)]
         $PrivateKey,
@@ -130,18 +117,25 @@ Function New-CSR {
     }
 
     If ($KeyUsage) {
-        $KeyUsage | ForEach-Object {
-            Write-Verbose "$($MyInvocation.MyCommand): Adding Key Usage $_"
-            $KeyUsageDefinition = $constant_KUDefinition[$_]
+        $KeyUsages = $KeyUsage | ForEach-Object {
+            $KeyUsageName = $_.ToString()
+            # Verify that only compatible key usages are considered
+            $KeyUsageDefinition = $constant_KUDefinition[$KeyUsageName]
             If($KeyUsageDefinition.KeyTypes -notcontains $UsedAlgorithm) {
                 Write-Verbose "$($MyInvocation.MyCommand): Key usage $_ is not supported for algorithm $UsedAlgorithm"
             } Else {
-                $Extension = New-Object System.Security.Cryptography.X509Certificates.X509KeyUsageExtension
-                $Oid = $constant_KUDefinition[$_].Oid
-                $Extension.Oid = $Oid
-                $Request.CertificateExtensions.Add($Extension)
+                Write-Output $KeyUsageName
             }
         }
+
+        Write-Verbose "Adding Key Usage: $KeyUsages"
+
+        $KeyUsageExtension = [System.Security.Cryptography.X509Certificates.X509KeyUsageExtension]::new(
+            [System.Security.Cryptography.X509Certificates.X509KeyUsageFlags] $KeyUsages,
+            $true # Critical
+        )
+
+        $Request.CertificateExtensions.Add($KeyUsageExtension)
     }
 
     If ($ExtendedKeyUsage -or $ExtendedKeyUsageOid) {
