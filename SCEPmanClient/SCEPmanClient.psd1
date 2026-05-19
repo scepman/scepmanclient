@@ -35,7 +35,8 @@
     'New-CSR',
     'New-PrivateKey',
     'New-SCEPmanCertificate',
-    'New-SCEPManKeyVaultCertificate'
+    'New-SCEPManKeyVaultCertificate',
+    'Revoke-SCEPmanCertificate'
   )
 
 }
