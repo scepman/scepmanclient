@@ -118,21 +118,48 @@ Function Revoke-SCEPmanCertificate {
 
             Write-Verbose "$($MyInvocation.MyCommand): Sending revocation request to $RequestUrl"
 
-            try {
+            $Result = try {
                 $Response = Invoke-RestMethod -Uri $RequestUrl -Method Patch -Headers $Headers -Body $Body
+                [pscustomobject]@{
+                    Success      = $true
+                    StatusCode   = 200
+                    ErrorCode    = $null
+                    ErrorMessage = $null
+                }
+
                 Write-Verbose "$($MyInvocation.MyCommand): Certificate $Serial revoked successfully."
                 $Response
             } catch {
-                $StatusCode = $_.Exception.Response.StatusCode.value__
-                Write-Error "$($MyInvocation.MyCommand): Failed to revoke certificate $Serial. Status code: $StatusCode. Error details: $($_ | Out-String)"
+                $statusCode = [int]$_.Exception.Response.StatusCode
+                $errorBody = $_.ErrorDetails.Message
 
-                switch ($StatusCode) {
-                    401 { throw "$($MyInvocation.MyCommand): Unauthorized. Authentication failed. $_" }
-                    400 { throw "$($MyInvocation.MyCommand): Bad request. Check the request body for errors. $_" }
-                    404 { throw "$($MyInvocation.MyCommand): Certificate not found. Verify the URL and that serial number '$Serial' exists. $_" }
-                    500 { throw "$($MyInvocation.MyCommand): Server error. The certificate may have already been revoked. $_" }
-                    default { throw $_ }
+                $errorCode = $null
+                $errorMessage = $null
+
+                if ($errorBody) {
+                    try {
+                        $parsed = $errorBody | ConvertFrom-Json
+                        $errorCode = $parsed.ErrorCode
+                        $errorMessage = $parsed.ErrorMessage
+                    }
+                    catch {
+                        $errorMessage = $errorBody
+                    }
                 }
+
+                [pscustomobject]@{
+                    Success      = $false
+                    StatusCode   = $statusCode
+                    ErrorCode    = $errorCode
+                    ErrorMessage = $errorMessage
+                }
+
+            }
+
+            If ($Result.Success) {
+                Write-Output "$($MyInvocation.MyCommand): Certificate $Serial revoked successfully."
+            } Else {
+                throw "$($MyInvocation.MyCommand): Failed to revoke certificate $Serial. StatusCode: $($Result.StatusCode), ErrorCode: $($Result.ErrorCode), Message: $($Result.ErrorMessage)"
             }
         }
     }
