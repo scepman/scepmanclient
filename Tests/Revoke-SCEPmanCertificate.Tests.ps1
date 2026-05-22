@@ -1,7 +1,7 @@
 BeforeAll {
     $ModuleRoot = "$PSScriptRoot\..\SCEPmanClient\"
 
-    Import-Module "$ModuleRoot\SCEPmanClient.psm1" -Force
+    Import-Module "$ModuleRoot\SCEPmanClient.psm1"
 }
 
 Describe "Revoke-SCEPmanCertificate" {
