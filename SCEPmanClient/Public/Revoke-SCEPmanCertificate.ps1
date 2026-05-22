@@ -119,7 +119,7 @@ Function Revoke-SCEPmanCertificate {
             Write-Verbose "$($MyInvocation.MyCommand): Sending revocation request to $RequestUrl"
 
             $Result = try {
-                $Response = Invoke-RestMethod -Uri $RequestUrl -Method Patch -Headers $Headers -Body $Body
+                Invoke-RestMethod -Uri $RequestUrl -Method Patch -Headers $Headers -Body $Body
                 [pscustomobject]@{
                     Success      = $true
                     StatusCode   = 200
@@ -128,7 +128,6 @@ Function Revoke-SCEPmanCertificate {
                 }
 
                 Write-Verbose "$($MyInvocation.MyCommand): Certificate $Serial revoked successfully."
-                $Response
             } catch {
                 $statusCode = [int]$_.Exception.Response.StatusCode
                 $errorBody = $_.ErrorDetails.Message
