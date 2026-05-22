@@ -36,7 +36,8 @@
     'New-PrivateKey',
     'New-SCEPmanCertificate',
     'New-SCEPManKeyVaultCertificate',
-    'Revoke-SCEPmanCertificate'
+    'Revoke-SCEPmanCertificate',
+    'Find-SCEPmanCertificate'
   )
 
 }

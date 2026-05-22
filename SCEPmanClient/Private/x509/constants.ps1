@@ -59,3 +59,18 @@ enum RevocationReason {
     PrivilegeWithdrawn = 9
     AACompromise = 10
 }
+
+enum CertValidityType {
+    Valid
+    Revoked
+    Expired
+    Any
+}
+
+enum CertType {
+    Static
+    DC
+    User
+    Device
+    Any
+}
