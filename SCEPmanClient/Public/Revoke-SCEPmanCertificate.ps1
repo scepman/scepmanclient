@@ -128,7 +128,6 @@ Function Revoke-SCEPmanCertificate {
                 }
 
                 Write-Verbose "$($MyInvocation.MyCommand): Certificate $Serial revoked successfully."
-                $Response
             } catch {
                 $statusCode = [int]$_.Exception.Response.StatusCode
                 $errorBody = $_.ErrorDetails.Message
