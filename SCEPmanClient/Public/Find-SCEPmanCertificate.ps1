@@ -139,7 +139,7 @@ Function Find-SCEPmanCertificate {
             Return $Response
 
         } catch {
-            $StatusCode = [int]$_.Exception.Response.StatusCode
+            $StatusCode = if ($_.Exception.Response) { [int]$_.Exception.Response.StatusCode } else { $null }
             $RawErrorBody = $_.ErrorDetails.Message
 
             $ApiErrorCode = $null
