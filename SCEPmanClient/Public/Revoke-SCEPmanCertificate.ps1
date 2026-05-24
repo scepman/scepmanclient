@@ -146,6 +146,11 @@ Function Revoke-SCEPmanCertificate {
                     }
                 }
 
+                # If we could not retrieve the internal error code/message, throw the raw error for better visibility
+                if (-not $errorCode) {
+                    throw "$($MyInvocation.MyCommand): Failed to revoke certificate $Serial. Raw error: $($_)"
+                }
+
                 [pscustomobject]@{
                     Success      = $false
                     StatusCode   = $statusCode
