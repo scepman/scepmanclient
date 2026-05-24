@@ -166,7 +166,7 @@ Function Find-SCEPmanCertificate {
                         401 { throw "$($MyInvocation.MyCommand): Unauthorized. Authentication failed." }
                         403 { throw "$($MyInvocation.MyCommand): Forbidden. Access denied or license revoked." }
                         404 { throw "$($MyInvocation.MyCommand): Endpoint not found. Verify the URL and that the manage API endpoint exists." }
-                        409 { throw "$($MyInvocation.MyCommand): Conflict. $($ApiErrorMessage ? $ApiErrorMessage : 'Request could not be completed.')" }
+                        409 { throw "$($MyInvocation.MyCommand): Conflict. $(if ($ApiErrorMessage) { $ApiErrorMessage } else { 'Request could not be completed.' })" }
                         500 { throw "$($MyInvocation.MyCommand): Server error while searching certificates. $ApiErrorMessage" }
                         default { throw $_ }
                     }
