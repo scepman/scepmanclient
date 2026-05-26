@@ -25,6 +25,18 @@ Set-Variable -Option Constant -Name constant_KUDefinition -Value @{
     'NonRepudiation'         = @{ 'Oid' = '2.5.29.151'; 'KeyTypes' = @('RSA', 'ECDSA') }
 }
 
+enum KeyUsage {
+    DigitalSignature
+    CRLSign
+    DataEncipherment
+    DecipherOnly
+    EncipherOnly
+    KeyAgreement
+    KeyCertSign
+    KeyEncipherment
+    NonRepudiation
+}
+
 Set-Variable -Option Constant -Name constant_HashingAlgorithm -Value @('SHA256', 'SHA384', 'SHA512')
 
 Set-Variable -Option Constant -Name constant_SignatureAlgorithm -Value @('RSA', 'ECDSA')
