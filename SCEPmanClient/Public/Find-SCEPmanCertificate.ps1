@@ -64,9 +64,9 @@ Function Find-SCEPmanCertificate {
         [ValidateRange(1, 500)]
         [Int]$PageSize = 50,
 
-        [CertValidityType]$CertValidity = 'Any',
+        [CertValidityType]$CertValidity,
 
-        [CertType]$CertType = 'Any',
+        [CertType]$CertType,
 
         [String]$ContinuationToken,
 
