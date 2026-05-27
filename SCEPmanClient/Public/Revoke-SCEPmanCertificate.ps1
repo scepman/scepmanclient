@@ -46,7 +46,7 @@
 #>
 
 Function Revoke-SCEPmanCertificate {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName='AzAuth')]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingUsernameAndPasswordParams", "", Justification="Service principal authentication requires username and password.")]
     Param(
         [Parameter(Mandatory, Position=0)]
@@ -61,38 +61,56 @@ Function Revoke-SCEPmanCertificate {
 
         [String]$Revoker,
 
+        [Parameter(ParameterSetName='AzAuth')]
         [String]$ResourceUrl,
 
+        [Parameter(ParameterSetName='AzAuth')]
         [Switch]$IgnoreExistingSession,
+        [Parameter(ParameterSetName='AzAuth')]
         [Switch]$DeviceCode,
+        [Parameter(ParameterSetName='AzAuth')]
         [Switch]$Identity,
+        [Parameter(ParameterSetName='AzAuth')]
         [String]$ClientId,
+        [Parameter(ParameterSetName='AzAuth')]
         [String]$TenantId,
-        [String]$ClientSecret
+        [Parameter(ParameterSetName='AzAuth')]
+        [String]$ClientSecret,
+
+        [Parameter(ParameterSetName='DirectTokenAuth')]
+        [String]$AccessToken
     )
 
     Begin {
         $ErrorActionPreference = 'Stop'
 
-        Set-AzConfig -Scope Process -LoginExperienceV2 Off -DisplaySurveyMessage $false | Out-Null
+        If($PSCmdlet.ParameterSetName -eq 'DirectTokenAuth') {
+            Write-Verbose "$($MyInvocation.MyCommand): Using direct token authentication"
 
-        $Connect_Params = @{}
+            If (-not $AccessToken) {
+                throw "$($MyInvocation.MyCommand): AccessToken is required for direct token authentication"
+            }
+        } Else {
+            Set-AzConfig -Scope Process -LoginExperienceV2 Off -DisplaySurveyMessage $false | Out-Null
 
-        If ($PSBoundParameters.ContainsKey('IgnoreExistingSession')) { $Connect_Params['IgnoreExistingSession'] = $true }
-        If ($PSBoundParameters.ContainsKey('DeviceCode')) { $Connect_Params['DeviceCode'] = $true }
-        If ($PSBoundParameters.ContainsKey('Identity')) { $Connect_Params['Identity'] = $true }
-        If ($PSBoundParameters.ContainsKey('ClientId')) { $Connect_Params['ClientId'] = $ClientId }
-        If ($PSBoundParameters.ContainsKey('TenantId')) { $Connect_Params['TenantId'] = $TenantId }
-        If ($PSBoundParameters.ContainsKey('ClientSecret')) { $Connect_Params['ClientSecret'] = $ClientSecret }
+            $Connect_Params = @{}
 
-        Connect-SCEPmanAzAccount @Connect_Params
+            If ($PSBoundParameters.ContainsKey('IgnoreExistingSession')) { $Connect_Params['IgnoreExistingSession'] = $true }
+            If ($PSBoundParameters.ContainsKey('DeviceCode')) { $Connect_Params['DeviceCode'] = $true }
+            If ($PSBoundParameters.ContainsKey('Identity')) { $Connect_Params['Identity'] = $true }
+            If ($PSBoundParameters.ContainsKey('ClientId')) { $Connect_Params['ClientId'] = $ClientId }
+            If ($PSBoundParameters.ContainsKey('TenantId')) { $Connect_Params['TenantId'] = $TenantId }
+            If ($PSBoundParameters.ContainsKey('ClientSecret')) { $Connect_Params['ClientSecret'] = $ClientSecret }
 
-        If (-not $PSBoundParameters.ContainsKey('ResourceUrl')) {
-            Write-Verbose "$($MyInvocation.MyCommand): No resource URL provided. Trying to find Enterprise Application for URL: $Url"
-            $ResourceUrl = Get-SCEPmanResourceUrl -AppServiceUrl $Url
+            Connect-SCEPmanAzAccount @Connect_Params
+
+            If (-not $PSBoundParameters.ContainsKey('ResourceUrl')) {
+                Write-Verbose "$($MyInvocation.MyCommand): No resource URL provided. Trying to find Enterprise Application for URL: $Url"
+                $ResourceUrl = Get-SCEPmanResourceUrl -AppServiceUrl $Url
+            }
+
+            $AccessToken = Get-SCEPmanAccessToken -ResourceUrl $ResourceUrl
         }
-
-        $AccessToken = Get-SCEPmanAccessToken -ResourceUrl $ResourceUrl
 
         $BaseUrl = $Url.TrimEnd('/')
 
