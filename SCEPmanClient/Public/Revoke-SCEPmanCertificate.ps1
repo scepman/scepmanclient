@@ -98,9 +98,7 @@ Function Revoke-SCEPmanCertificate {
             $Revoker = (Get-AzContext).Account.Id
             Write-Verbose "$($MyInvocation.MyCommand): No revoker provided. Using current Azure context: $Revoker"
         }
-    }
 
-    Process {
         $BaseUrl = $Url.TrimEnd('/')
 
         $Headers = @{
@@ -108,6 +106,9 @@ Function Revoke-SCEPmanCertificate {
             'Content-Type'  = 'application/json'
         }
 
+    }
+
+    Process {
         foreach ($Serial in $SerialNumber) {
             $RequestUrl = "$BaseUrl/api/manage/revoke/$Serial"
 
