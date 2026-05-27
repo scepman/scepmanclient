@@ -15,7 +15,7 @@
     The reason for revoking the certificate.
 
 .PARAMETER Revoker
-    The identity of the person or entity revoking the certificate (e.g. admin@contoso.com). If not provided, the current Azure context account will be used.
+    The identity of the person or entity revoking the certificate (e.g. admin@contoso.com).
 
 .PARAMETER ResourceUrl
     The resource URL of the SCEPman service. If not provided, the function will try to find the Enterprise Application for the URL.
@@ -37,6 +37,9 @@
 
 .PARAMETER ClientSecret
     The client secret for service principal authentication.
+
+.PARAMETER AccessToken
+    An access token for authentication. If not provided, the function will authenticate using Azure PowerShell
 
 .EXAMPLE
     Revoke-SCEPmanCertificate -Url "https://scepman.contoso.com" -SerialNumber "1A2B3C4D" -RevocationReason KeyCompromise -Revoker "admin@contoso.com"

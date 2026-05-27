@@ -44,6 +44,9 @@
 .PARAMETER ClientSecret
     The client secret for service principal authentication.
 
+.PARAMETER AccessToken
+    An access token for authentication. If not provided, the function will authenticate using Azure PowerShell
+
 .EXAMPLE
     Find-SCEPmanCertificate -Url "https://scepman.contoso.com" -SearchText "alice@contoso.com" -PageSize 50 -CertValidity Any -CertType Any
 
