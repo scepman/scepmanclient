@@ -156,7 +156,7 @@ Function Find-SCEPmanCertificate {
                 }
             }
 
-            Write-Error "$($MyInvocation.MyCommand): Failed to search certificates. Status code: $StatusCode. ApiErrorCode: $ApiErrorCode. ApiErrorMessage: $ApiErrorMessage"
+            Write-Verbose "$($MyInvocation.MyCommand): Failed to search certificates. Status code: $StatusCode. ApiErrorCode: $ApiErrorCode. ApiErrorMessage: $ApiErrorMessage"
 
             switch ($ApiErrorCode) {
                 4711 { throw "$($MyInvocation.MyCommand): SCEPman Enterprise is required for the manage search API." }
