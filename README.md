@@ -95,3 +95,31 @@ Please note that this requires additional SCEPman configuration regarding the st
 - AppConfig:StaticValidation:AllowRenewals : true
 - AppConfig:StaticValidation:ReenrollmentAllowedCertificateTypes: Static,IntuneUser (Depending on the types intended for renewal)
 
+## Search certificates
+Use `Find-SCEPmanCertificate` to query certificates via the SCEPman management API.
+
+```powershell
+Find-SCEPmanCertificate -Url 'https://scepman.contoso.com' -SearchText 'alice@contoso.com' -PageSize 50 -CertValidity Any -CertType Any
+```
+
+When paginating, pass the continuation token returned by the previous response:
+
+```powershell
+Find-SCEPmanCertificate -Url 'https://scepman.contoso.com' -SearchText 'alice' -ContinuationToken '<continuation-token>'
+```
+
+## Revoke certificates
+Use `Revoke-SCEPmanCertificate` to revoke one or more certificates in SCEPman Enterprise.
+
+Revoke a single certificate with an explicit revoker identity:
+
+```powershell
+Revoke-SCEPmanCertificate -Url 'https://scepman.contoso.com' -SerialNumber '1A2B3C4D' -RevocationReason KeyCompromise -Revoker 'admin@contoso.com'
+```
+
+Revoke multiple certificates at once:
+
+```powershell
+Revoke-SCEPmanCertificate -Url 'https://scepman.contoso.com' -SerialNumber '1A2B3C4D','5E6F7A8B' -RevocationReason Superseded
+```
+

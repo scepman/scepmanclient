@@ -57,3 +57,32 @@ enum ValidityPeriod {
     Months
     Years
 }
+
+enum RevocationReason {
+    # Good = -1
+    Unspecified = 0
+    KeyCompromise = 1
+    CACompromise = 2
+    AffiliationChanged = 3
+    Superseded = 4
+    CessationOfOperation = 5
+    CertificateHold = 6
+    RemoveFromCrl = 8
+    PrivilegeWithdrawn = 9
+    AACompromise = 10
+}
+
+enum CertValidityType {
+    Valid
+    Revoked
+    Expired
+    Any
+}
+
+enum CertType {
+    Static
+    DC
+    User
+    Device
+    Any
+}
