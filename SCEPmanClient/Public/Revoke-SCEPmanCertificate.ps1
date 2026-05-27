@@ -132,52 +132,11 @@ Function Revoke-SCEPmanCertificate {
 
             Write-Verbose "$($MyInvocation.MyCommand): Sending revocation request to $RequestUrl"
 
-            $Result = try {
+            try {
                 $null = Invoke-RestMethod -Uri $RequestUrl -Method Patch -Headers $Headers -Body $Body
-                [pscustomobject]@{
-                    Success      = $true
-                    StatusCode   = 200
-                    ErrorCode    = $null
-                    ErrorMessage = $null
-                }
-
-                Write-Verbose "$($MyInvocation.MyCommand): Certificate $Serial revoked successfully."
-            } catch {
-                $statusCode = [int]$_.Exception.Response.StatusCode
-                $errorBody = $_.ErrorDetails.Message
-
-                $errorCode = $null
-                $errorMessage = $null
-
-                if ($errorBody) {
-                    try {
-                        $parsed = $errorBody | ConvertFrom-Json
-                        $errorCode = $parsed.ErrorCode
-                        $errorMessage = $parsed.ErrorMessage
-                    }
-                    catch {
-                        $errorMessage = $errorBody
-                    }
-                }
-
-                # If we could not retrieve the internal error code/message, throw the raw error for better visibility
-                if (-not $errorCode) {
-                    throw "$($MyInvocation.MyCommand): Failed to revoke certificate $Serial. Raw error: $($_)"
-                }
-
-                [pscustomobject]@{
-                    Success      = $false
-                    StatusCode   = $statusCode
-                    ErrorCode    = $errorCode
-                    ErrorMessage = $errorMessage
-                }
-
-            }
-
-            If ($Result.Success) {
                 Write-Output "$($MyInvocation.MyCommand): Certificate $Serial revoked successfully."
-            } Else {
-                throw "$($MyInvocation.MyCommand): Failed to revoke certificate $Serial. StatusCode: $($Result.StatusCode), ErrorCode: $($Result.ErrorCode), Message: $($Result.ErrorMessage)"
+            } catch {
+                throw "$($MyInvocation.MyCommand): Failed to revoke certificate $Serial. Raw error: $($_)"
             }
         }
     }
