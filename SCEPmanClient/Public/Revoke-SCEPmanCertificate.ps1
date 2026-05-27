@@ -94,11 +94,6 @@ Function Revoke-SCEPmanCertificate {
 
         $AccessToken = Get-SCEPmanAccessToken -ResourceUrl $ResourceUrl
 
-        If (-not $PSBoundParameters.ContainsKey('Revoker')) {
-            $Revoker = (Get-AzContext).Account.Id
-            Write-Verbose "$($MyInvocation.MyCommand): No revoker provided. Using current Azure context: $Revoker"
-        }
-
         $BaseUrl = $Url.TrimEnd('/')
 
         $Headers = @{
