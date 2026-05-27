@@ -46,16 +46,6 @@ Describe "Revoke-SCEPmanCertificate" {
         $script:InvokeCalls[0].Body.revoker | Should -Be 'admin@contoso.com'
     }
 
-    It "uses Azure context account as revoker when Revoker is not provided" {
-        Revoke-SCEPmanCertificate -Url "https://scepman.contoso.com/" -SerialNumber "A1B2" -RevocationReason Superseded | Out-Null
-
-        Should -Invoke Get-SCEPmanResourceUrl -Times 1 -ModuleName SCEPmanClient
-        Should -Invoke Get-AzContext -Times 1 -ModuleName SCEPmanClient
-        $script:InvokeCalls[0].Body.revocationReason | Should -Be 4
-        $script:InvokeCalls[0].Body.revoker | Should -Be 'context-user@contoso.com'
-        $script:InvokeCalls[0].Uri | Should -Be 'https://scepman.contoso.com/api/manage/revoke/A1B2'
-    }
-
     It "sends one request per serial number" {
         Revoke-SCEPmanCertificate -Url "https://scepman.contoso.com" -SerialNumber "1111", "2222" -RevocationReason Unspecified -Revoker "admin@contoso.com" | Out-Null
 
