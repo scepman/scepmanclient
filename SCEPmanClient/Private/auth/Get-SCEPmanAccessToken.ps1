@@ -58,7 +58,7 @@ Function Get-SCEPmanAccessToken {
     If(($Claims.roles -contains 'CSR.SelfService') -or ($Claims.roles -contains 'CSR.Request.Db')) {
         Write-Verbose "$($MyInvocation.MyCommand): Found required role in $($Claims.roles)"
         Return $Token
-    } else if ($Claims.roles -contains 'Manage.All') {
+    } elseif ($Claims.roles -contains 'Manage.All') {
         Write-Verbose "$($MyInvocation.MyCommand): Found 'Manage.All' role in $($Claims.roles). Requests might not work as intended, but management operations should work."
         Return $Token
     } else {
