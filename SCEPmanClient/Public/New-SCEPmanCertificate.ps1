@@ -164,11 +164,11 @@ Function New-SCEPmanCertificate {
         [Switch]$SubjectFromHostname,
 
         [String]$Subject,
-        [String]$UPN,
-        [String]$Email,
-        [String]$DNSName,
-        [String]$URI,
-        [String]$IP,
+        [String[]]$UPN,
+        [String[]]$Email,
+        [String[]]$DNSName,
+        [String[]]$URI,
+        [String[]]$IP,
 
         [ValidateSet('RSA', 'ECDSA')]
         [String]$SignatureAlgorithm,
@@ -176,6 +176,8 @@ Function New-SCEPmanCertificate {
         [ValidateSet('ClientAuth', 'ServerAuth', 'CodeSigning', 'EmailProtection', 'TimeStamping', 'OCSPSigning', 'SmartCardLogon', 'EncryptFileSystem', 'IPSecIKE', 'PSecIKEIntermediate', 'KDCAuth', 'IpSecurityUser')]
         [String[]]$ExtendedKeyUsage,
         [String[]]$ExtendedKeyUsageOID,
+
+        [KeyUsage[]]$KeyUsage,
 
         [ValidateScript({ Test-Path $_ -PathType Container })]
         [String]$SaveToFolder,
@@ -335,6 +337,7 @@ Function New-SCEPmanCertificate {
                 If($PSBoundParameters.ContainsKey('DNSName')) { $Request_Params['DNSName'] = $DNSName }
                 If($PSBoundParameters.ContainsKey('URI')) { $Request_Params['URI'] = $URI }
                 If($PSBoundParameters.ContainsKey('IP')) { $Request_Params['IP'] = $IP }
+                If($PSBoundParameters.ContainsKey('KeyUsage')) { $Request_Params['KeyUsage'] = $KeyUsage }
                 If($PSBoundParameters.ContainsKey('ExtendedKeyUsage')) { $Request_Params['ExtendedKeyUsage'] = $ExtendedKeyUsage }
                 If($PSBoundParameters.ContainsKey('ExtendedKeyUsageOid')) { $Request_Params['ExtendedKeyUsageOid'] = $ExtendedKeyUsageOid }
                 If($PSBoundParameters.ContainsKey('ValidityPeriod')) { $Request_Params['ValidityPeriod'] = $ValidityPeriod }
@@ -379,6 +382,9 @@ Function New-SCEPmanCertificate {
         }
 
         If ($PSBoundParameters.ContainsKey('SaveToFolder')) {
+            # Sanitize folder path
+            $SaveToFolder = (Resolve-Path -Path $SaveToFolder).Path
+
             If ($Format -eq 'PFX') {
                 $MergedCertificate = Get-MergedCertificate -Certificate $NewCertificate -PrivateKey $PrivateKey
 

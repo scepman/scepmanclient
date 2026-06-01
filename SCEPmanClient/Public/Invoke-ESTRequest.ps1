@@ -72,6 +72,10 @@ Function Invoke-ESTRequest {
         $Request_Params['SkipHttpErrorCheck'] = $true
     }
 
+    If ($PSVersionTable.PSVersion.Major -le 5) {
+        $Request_Params['UseBasicParsing'] = $true
+    }
+
     If ($PSBoundParameters.ContainsKey('Credential')) {
         Write-Verbose "$($MyInvocation.MyCommand): Add passed credential to request"
         $Request_Params['Credential'] = $Credential
