@@ -11,6 +11,10 @@
 .PARAMETER ResourceUrl
     The URL of the SCEPman service. If not provided, the function will try to find the Enterprise Application for the URL.
 
+.PARAMETER AccessToken
+    A bearer token for the SCEPman API. When provided, the function uses this token directly for the EST request instead of acquiring one from Azure. This is an alternative to the Azure-based authentication path.
+    Note: -SubjectFromUserContext and -SaveToKeyVault still require a live Azure context even when a token is supplied.
+
 .PARAMETER IgnoreExistingSession
     Ignore existing Azure session.
 
@@ -129,6 +133,11 @@ Function New-SCEPmanCertificate {
             ParameterSetName='AzAuth',
             Position=0
         )]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='DirectTokenAuth',
+            Position=0
+        )]
         [Alias('AppServiceUrl')]
         [String]$Url,
         [Parameter(ParameterSetName='AzAuth')]
@@ -146,6 +155,9 @@ Function New-SCEPmanCertificate {
         [String]$TenantId,
         [Parameter(ParameterSetName='AzAuth')]
         [String]$ClientSecret,
+
+        [Parameter(Mandatory, ParameterSetName='DirectTokenAuth')]
+        [String]$AccessToken,
 
         [Parameter(ParameterSetName='CertAuthFromObject')]
         [System.Security.Cryptography.X509Certificates.X509Certificate2]$Certificate,
@@ -258,6 +270,14 @@ Function New-SCEPmanCertificate {
             }
         }
 
+        If($PSCmdlet.ParameterSetName -eq 'DirectTokenAuth') {
+            Write-Verbose "$($MyInvocation.MyCommand): Using direct token authentication"
+
+            If (-not $AccessToken) {
+                throw "$($MyInvocation.MyCommand): AccessToken is required for direct token authentication"
+            }
+        }
+
         If($PSCmdlet.ParameterSetName -eq 'AzAuth') {
             Set-AzConfig -Scope Process -LoginExperienceV2 Off -DisplaySurveyMessage $false | Out-Null
 
@@ -311,7 +331,7 @@ Function New-SCEPmanCertificate {
             }
         }
 
-        If($PSCmdlet.ParameterSetName -eq 'AzAuth') {
+        If($PSCmdlet.ParameterSetName -in 'AzAuth', 'DirectTokenAuth') {
 
             If($PSBoundParameters.ContainsKey('Csr')) {
                 $Request = $Csr
