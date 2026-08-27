@@ -232,13 +232,9 @@ Function New-CSR {
     }
 
     If ($ChallengePassword) {
-        If ($PSVersionTable.PSEdition -ne 'Core') {
-            Write-Error "$($MyInvocation.MyCommand): ChallengePassword is not supported in Windows PowerShell"
-            Return
-        }
-
-        $ChallengePasswordBody = ([System.Text.Encoding]::ASCII).GetBytes($ChallengePassword)
-        $ChallengePasswordHeader = [Byte[]]@([Byte]0x13, [Byte]$ChallengePasswordBody.Length)
+        # UTF8String tag (0x0C); DER length octets computed manually since System.Formats.Asn1 is unavailable in Windows PowerShell
+        $ChallengePasswordBody = [System.Text.Encoding]::UTF8.GetBytes($ChallengePassword)
+        $ChallengePasswordHeader = [Byte[]]@([Byte]0x0C) + (Get-DerLengthBytes -Length $ChallengePasswordBody.Length)
         $ChallengePasswordData = $ChallengePasswordHeader + $ChallengePasswordBody
         $ChallengePasswordAttribute = [System.Security.Cryptography.AsnEncodedData]::new($constant_ChallengePasswordOid, $ChallengePasswordData)
         $Request.OtherRequestAttributes.Add($ChallengePasswordAttribute)
