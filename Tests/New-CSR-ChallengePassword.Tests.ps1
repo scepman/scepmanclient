@@ -22,7 +22,6 @@ Describe "New-CSR ChallengePassword" {
 
 		$ChallengeAttr = $Request.OtherRequestAttributes | Where-Object { $_.Oid.Value -eq '1.2.840.113549.1.9.7' }
 		# The raw data contains ASN.1 PrintableString header (0x13, length) followed by the password bytes
-		$PasswordBytes = [System.Text.Encoding]::ASCII.GetBytes($Password)
 		$DecodedValue = [System.Text.Encoding]::ASCII.GetString($ChallengeAttr.RawData, 2, $ChallengeAttr.RawData.Length - 2)
 		$DecodedValue | Should -Be $Password
 	}
