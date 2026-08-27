@@ -6,8 +6,7 @@
     The URL of the SCEPman app service.
 
     .PARAMETER Endpoint
-    The endpoint to get the root CA certificate from. Default is '/.well-known/est/cacerts'.
-
+    The endpoint to get the root CA certificate from. Default is '/ca'.
     .EXAMPLE
     Get-SCEPmanRootCA -AppServiceUrl 'https://scepman.contoso.com'
 
