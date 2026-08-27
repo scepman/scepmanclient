@@ -16,6 +16,7 @@
     Get-DerLengthBytes -Length 200
 #>
 Function Get-DerLengthBytes {
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "", Justification="The function returns a byte array (multiple octets), so a plural noun accurately describes the output.")]
     Param(
         [Parameter(Mandatory)]
         [Int]$Length
