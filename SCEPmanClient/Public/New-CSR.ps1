@@ -115,6 +115,7 @@ Function New-CSR {
         [ValidityPeriod]$ValidityPeriod = [ValidityPeriod]::Days,
         [Int]$ValidityPeriodUnits,
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPlainTextForPassword", "", Justification="Meant to be passed as plain text for ease of use; callers are expected to handle it securely.")]
         [String]$ChallengePassword,
 
         [Switch]$Raw
