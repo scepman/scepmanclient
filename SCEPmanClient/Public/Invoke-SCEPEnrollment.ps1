@@ -42,7 +42,7 @@ Function Invoke-SCEPEnrollment {
 
     $WebClient = New-Object System.Net.WebClient
 
-    $Uri = ($Url -replace '/$') + $Endpoint
+    $Uri = Join-UrlPath -Url $Url -Endpoint $Endpoint
 
     # Append https scheme if not present, as webclient does not support scheme-less URLs / treats them as file paths
     If ($Uri -notmatch '^https?://') {

@@ -25,7 +25,7 @@ Function Get-SCEPmanRootCA {
         [String]$Endpoint = '/ca'
     )
 
-    $Uri = $Uri = ($Url -replace '/$') + $Endpoint
+    $Uri = Join-UrlPath -Url $Url -Endpoint $Endpoint
 
     Write-Verbose "$($MyInvocation.MyCommand): Getting root CA from $Uri"
     $Response = Invoke-WebRequest -Uri $Uri -Method GET
