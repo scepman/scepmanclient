@@ -95,3 +95,16 @@ Please note that this requires additional SCEPman configuration regarding the st
 - AppConfig:StaticValidation:AllowRenewals : true
 - AppConfig:StaticValidation:ReenrollmentAllowedCertificateTypes: Static,IntuneUser (Depending on the types intended for renewal)
 
+## Initial SCEP Enrollment
+Use `-UseSCEPEnrollment` together with a `ChallengePassword` to request a certificate without any prior Azure authentication or existing certificate. This relies on SCEPman's static SCEP endpoint, which defaults to `/static`.
+
+```powershell
+New-SCEPmanCertificate -Url 'scepman.contoso.com' -UseSCEPEnrollment -ChallengePassword 'MyChallengePassword' -Subject 'CN=WebServer' -SaveToStore 'LocalMachine'
+```
+
+Use the `-Endpoint` parameter to send the request to a specific path of the server. This can be useful if you want to use the `/static/aad` endpoint of SCEPman:
+
+```powershell
+New-SCEPmanCertificate -Url 'scepman.contoso.com' -UseSCEPEnrollment -ChallengePassword 'MyChallengePassword' -Subject 'CN=Clara Oswald' -Endpoint '/static/aad' -UPN 'clara.oswald@contoso.com' -SaveToStore 'CurrentUser'
+```
+
