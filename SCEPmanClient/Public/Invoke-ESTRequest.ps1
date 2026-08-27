@@ -47,7 +47,7 @@ Function Invoke-ESTRequest {
         [PSCredential]$Credential
     )
 
-    $Uri = ($Url -replace '/$') + $Endpoint
+    $Uri = Join-UrlPath -Url $Url -Endpoint $Endpoint
 
     $Headers = @{
         'Content-Type' = 'application/pkcs10'
