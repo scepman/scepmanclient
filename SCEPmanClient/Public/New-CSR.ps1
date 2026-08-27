@@ -232,6 +232,11 @@ Function New-CSR {
     }
 
     If ($ChallengePassword) {
+        # CertificateRequest.OtherRequestAttributes is always null under Windows PowerShell's .NET Framework CertificateRequest implementation and cannot be populated
+        If ($PSVersionTable.PSEdition -ne 'Core') {
+            Throw "$($MyInvocation.MyCommand): ChallengePassword requires PowerShell 7+ (Core edition) and is not supported in Windows PowerShell"
+        }
+
         # UTF8String tag (0x0C); DER length octets computed manually since System.Formats.Asn1 is unavailable in Windows PowerShell
         $ChallengePasswordBody = [System.Text.Encoding]::UTF8.GetBytes($ChallengePassword)
         $ChallengePasswordHeader = [Byte[]]@([Byte]0x0C) + (Get-DerLengthBytes -Length $ChallengePasswordBody.Length)
