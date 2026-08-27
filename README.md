@@ -99,12 +99,40 @@ Please note that this requires additional SCEPman configuration regarding the st
 Use `-UseSCEPEnrollment` together with `-ChallengePassword` to request a certificate without any prior Azure authentication or existing certificate. This relies on SCEPman's static SCEP endpoint, which defaults to `/static`.
 
 ```powershell
-New-SCEPmanCertificate -Url 'scepman.contoso.com' -UseSCEPEnrollment -ChallengePassword 'MyChallengePassword' -Subject 'CN=WebServer' -SaveToStore 'LocalMachine'
+New-SCEPmanCertificate -Url 'https://scepman.contoso.com' -UseSCEPEnrollment -ChallengePassword 'MyChallengePassword' -Subject 'CN=WebServer' -SaveToStore 'LocalMachine'
 ```
 
 Use the `-Endpoint` parameter to send the request to a specific path of the server. This can be useful if you want to use the `/static/aad` endpoint of SCEPman:
 
 ```powershell
-New-SCEPmanCertificate -Url 'scepman.contoso.com' -UseSCEPEnrollment -ChallengePassword 'MyChallengePassword' -Subject 'CN=Clara Oswald' -Endpoint '/static/aad' -UPN 'clara.oswald@contoso.com' -SaveToStore 'CurrentUser'
+New-SCEPmanCertificate -Url 'https://scepman.contoso.com' -UseSCEPEnrollment -ChallengePassword 'MyChallengePassword' -Subject 'CN=Clara Oswald' -Endpoint '/static/aad' -UPN 'clara.oswald@contoso.com' -SaveToStore 'CurrentUser'
+```
+
+## Search certificates
+Use `Find-SCEPmanCertificate` to query certificates via the SCEPman management API.
+
+```powershell
+Find-SCEPmanCertificate -Url 'https://scepman.contoso.com' -SearchText 'alice@contoso.com' -PageSize 50 -CertValidity Any -CertType Any
+```
+
+When paginating, pass the continuation token returned by the previous response:
+
+```powershell
+Find-SCEPmanCertificate -Url 'https://scepman.contoso.com' -SearchText 'alice' -ContinuationToken '<continuation-token>'
+```
+
+## Revoke certificates
+Use `Revoke-SCEPmanCertificate` to revoke one or more certificates in SCEPman Enterprise.
+
+Revoke a single certificate with an explicit revoker identity:
+
+```powershell
+Revoke-SCEPmanCertificate -Url 'https://scepman.contoso.com' -SerialNumber '1A2B3C4D' -RevocationReason KeyCompromise -Revoker 'admin@contoso.com'
+```
+
+Revoke multiple certificates at once:
+
+```powershell
+Revoke-SCEPmanCertificate -Url 'https://scepman.contoso.com' -SerialNumber '1A2B3C4D','5E6F7A8B' -RevocationReason Superseded
 ```
 

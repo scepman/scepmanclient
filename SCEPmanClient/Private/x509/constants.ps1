@@ -25,6 +25,18 @@ Set-Variable -Option Constant -Name constant_KUDefinition -Value @{
     'NonRepudiation'         = @{ 'Oid' = '2.5.29.151'; 'KeyTypes' = @('RSA', 'ECDSA') }
 }
 
+enum KeyUsage {
+    DigitalSignature
+    CRLSign
+    DataEncipherment
+    DecipherOnly
+    EncipherOnly
+    KeyAgreement
+    KeyCertSign
+    KeyEncipherment
+    NonRepudiation
+}
+
 Set-Variable -Option Constant -Name constant_HashingAlgorithm -Value @('SHA256', 'SHA384', 'SHA512')
 
 Set-Variable -Option Constant -Name constant_SignatureAlgorithm -Value @('RSA', 'ECDSA')
@@ -45,4 +57,33 @@ enum ValidityPeriod {
     Weeks
     Months
     Years
+}
+
+enum RevocationReason {
+    # Good = -1
+    Unspecified = 0
+    KeyCompromise = 1
+    CACompromise = 2
+    AffiliationChanged = 3
+    Superseded = 4
+    CessationOfOperation = 5
+    CertificateHold = 6
+    RemoveFromCrl = 8
+    PrivilegeWithdrawn = 9
+    AACompromise = 10
+}
+
+enum CertValidityType {
+    Valid
+    Revoked
+    Expired
+    Any
+}
+
+enum CertType {
+    Static
+    DC
+    User
+    Device
+    Any
 }
