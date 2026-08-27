@@ -122,6 +122,7 @@ Function New-SCEPmanCertificate {
     [CmdletBinding(DefaultParameterSetName='AzAuth')]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "", Justification="The parameter PlainTextPassword is meant to be.. plain text.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPlainTextForPassword", "", Justification="The parameter PlainTextPassword is meant to be.. plain text.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "", Justification="Certificate issuance requires external communication with the EST/SCEP server; a meaningful ShouldProcess implementation is not feasible here.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingUsernameAndPasswordParams", "", Justification="Service principal authentication requires username and password.")]
     Param(
         [Parameter(

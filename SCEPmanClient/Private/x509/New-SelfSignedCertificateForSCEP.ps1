@@ -21,6 +21,7 @@
 Function New-SelfSignedCertificateForSCEP {
     [CmdletBinding()]
     [OutputType([System.Security.Cryptography.X509Certificates.X509Certificate2])]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "", Justification="Only creates an ephemeral, in-memory certificate; no system state is changed.")]
     Param(
         [Parameter(Mandatory)]
         [System.Security.Cryptography.X509Certificates.CertificateRequest]$CertificateRequest
