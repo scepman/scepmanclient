@@ -29,15 +29,16 @@ Function New-Pkcs7SignedMessage {
         [Parameter(Mandatory)]
         [System.Security.Cryptography.X509Certificates.X509Certificate2]$SignerCertificate,
         [Parameter(Mandatory)]
-        [Byte[]]$Message
-
+        [Byte[]]$Message,
+        [ValidateSet('17', '19')]
+        [String]$MessageType = '17'
     )
     Write-Verbose "$($MyInvocation.MyCommand): Signing message using $($SignerCertificate.Subject)"
 
     $CmsSigner = [System.Security.Cryptography.Pkcs.CmsSigner]::new($SignerCertificate)
     $CmsSigner.DigestAlgorithm = $constant_MD5Oid
 
-    $MessageTypeBody = ([System.Text.Encoding]::ASCII).GetBytes('17')
+    $MessageTypeBody = ([System.Text.Encoding]::ASCII).GetBytes($MessageType)
     $MessageTypeHeader = [Byte[]]@([Byte]19, [Byte]$MessageTypeBody.Length)
     $MessageTypeData = $MessageTypeHeader + $MessageTypeBody
     $MessageTypeAttribute = [System.Security.Cryptography.AsnEncodedData]::new($constant_MessageTypeOid, $MessageTypeData)

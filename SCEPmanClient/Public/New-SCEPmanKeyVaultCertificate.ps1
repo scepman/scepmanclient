@@ -52,7 +52,7 @@
 #>
 
 Function New-SCEPmanKeyVaultCertificate {
-    [CmdletBinding(DefaultParameterSetName='AzAuth')]
+    [CmdletBinding(DefaultParameterSetName='AzAuth', SupportsShouldProcess)]
     Param(
         [Parameter(ParameterSetName='AzAuth')]
         [Switch]$IgnoreExistingSession,
@@ -94,6 +94,8 @@ Function New-SCEPmanKeyVaultCertificate {
     )
 
     Begin {
+        $TempFile = $null
+
         If($PSCmdlet.ParameterSetName -eq 'AzAuth') {
             Set-AzConfig -Scope Process -LoginExperienceV2 Off -DisplaySurveyMessage $false | Out-Null
 
@@ -126,6 +128,12 @@ Function New-SCEPmanKeyVaultCertificate {
             return
         }
 
+        If (-not $PSCmdlet.ShouldProcess("certificate '$CertificateName' in Key Vault '$VaultName'", 'Create and import')) {
+            return
+        }
+
+        $TempFile = New-TemporaryFile
+
         try {
             $CertificateObject = Add-AzKeyVaultCertificate -VaultName $VaultName -Name $CertificateName -CertificatePolicy $KeyVaultPolicy -ErrorAction Stop
         } catch {
@@ -157,7 +165,7 @@ Function New-SCEPmanKeyVaultCertificate {
     }
 
     End {
-        If(Test-Path -Path $TempFile) {
+        If($TempFile -and (Test-Path -Path $TempFile)) {
             Remove-Item -Path $TempFile
         }
     }
