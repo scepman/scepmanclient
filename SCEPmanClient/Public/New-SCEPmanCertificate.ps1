@@ -11,6 +11,10 @@
 .PARAMETER ResourceUrl
     The URL of the SCEPman service. If not provided, the function will try to find the Enterprise Application for the URL.
 
+.PARAMETER AccessToken
+    A bearer token for the SCEPman API. When provided, the function uses this token directly for the EST request instead of acquiring one from Azure. This is an alternative to the Azure-based authentication path.
+    Note: -SubjectFromUserContext and -SaveToKeyVault still require a live Azure context even when a token is supplied.
+
 .PARAMETER IgnoreExistingSession
     Ignore existing Azure session.
 
@@ -135,6 +139,11 @@ Function New-SCEPmanCertificate {
             ParameterSetName='SCEPEnrollment',
             Position=0
         )]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='DirectTokenAuth',
+            Position=0
+        )]
         [Alias('AppServiceUrl')]
         [String]$Url,
         [String]$Endpoint,
@@ -162,6 +171,9 @@ Function New-SCEPmanCertificate {
         [String]$CertificateFromFile,
         [Parameter(ParameterSetName='CertAuthFromFile')]
         [String]$KeyFromFile,
+
+        [Parameter(Mandatory, ParameterSetName='DirectTokenAuth')]
+        [String]$AccessToken,
 
         [String]$Csr,
 
@@ -326,7 +338,7 @@ Function New-SCEPmanCertificate {
             }
         }
 
-        If($PSCmdlet.ParameterSetName -eq 'AzAuth') {
+        If($PSCmdlet.ParameterSetName -in 'AzAuth', 'DirectTokenAuth') {
 
             If($PSBoundParameters.ContainsKey('Csr')) {
                 $Request = $Csr
@@ -339,8 +351,12 @@ Function New-SCEPmanCertificate {
                 $Request_Params = @{}
                 If ($PSBoundParameters.ContainsKey('SubjectFromUserContext')) {
                     Write-Verbose "$($MyInvocation.MyCommand): SubjectFromUserContext is set. Using current user context for subject"
-                    $Request_Params['Subject'] = "CN=$((Get-AzContext).Account.id)"
-                    $Request_Params['UPN'] = (Get-AzContext).Account.id
+                    $AzContext = Get-AzContext
+                    If (-not $AzContext) {
+                        throw "$($MyInvocation.MyCommand): SubjectFromUserContext requires an active Azure context. Run Connect-AzAccount before using this option with AccessToken."
+                    }
+                    $Request_Params['Subject'] = "CN=$($AzContext.Account.Id)"
+                    $Request_Params['UPN'] = $AzContext.Account.Id
                 }
                 If ($PSBoundParameters.ContainsKey('SubjectFromHostname')) {
                     Write-Verbose "$($MyInvocation.MyCommand): SubjectFromHostname is set. Using hostname for subject: $(hostname)"

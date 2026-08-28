@@ -20,6 +20,10 @@
 .PARAMETER ClientSecret
     The client secret for service principal authentication.
 
+.PARAMETER AccessToken
+    A bearer token for the SCEPman API. When provided, this token is used for the SCEPman EST request instead of acquiring one from Azure.
+    Note: The Key Vault operations themselves still require a live Azure context; the token only substitutes for the SCEPman authentication.
+
 .PARAMETER ExtendedKeyUsage
     The extended key usage to add to the certificate.
 
@@ -61,6 +65,9 @@ Function New-SCEPmanKeyVaultCertificate {
         [Parameter(ParameterSetName='AzAuth')]
         [String]$ClientSecret,
 
+        [Parameter(Mandatory, ParameterSetName='DirectTokenAuth')]
+        [String]$AccessToken,
+
         [ValidateSet('ClientAuth', 'ServerAuth', 'CodeSigning')]
         [String[]]$ExtendedKeyUsage = @(),
         [String[]]$ExtendedKeyUsageOID = @(),
@@ -68,6 +75,11 @@ Function New-SCEPmanKeyVaultCertificate {
         [Parameter(
             Mandatory,
             ParameterSetName='AzAuth',
+            Position=0
+        )]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='DirectTokenAuth',
             Position=0
         )]
         [Alias('AppServiceUrl')]
@@ -96,7 +108,11 @@ Function New-SCEPmanKeyVaultCertificate {
             If ($PSBoundParameters.ContainsKey('ClientSecret')) { $Connect_Params['ClientSecret'] = $ClientSecret }
 
             Connect-SCEPmanAzAccount @Connect_Params
+        } ElseIf (-not (Get-AzContext)) {
+            throw "$($MyInvocation.MyCommand): Key Vault operations require an active Azure context. Run Connect-AzAccount before using AccessToken."
         }
+
+        $TempFile = New-TemporaryFile
     }
 
     Process {
@@ -126,7 +142,15 @@ Function New-SCEPmanKeyVaultCertificate {
             return
         }
 
-        $Certificate = New-SCEPmanCertificate $Url -CSR $CertificateObject.CertificateSigningRequest
+        $NewCertificate_Params = @{
+            Url = $Url
+            CSR = $CertificateObject.CertificateSigningRequest
+        }
+        If($PSCmdlet.ParameterSetName -eq 'DirectTokenAuth') {
+            $NewCertificate_Params['AccessToken'] = $AccessToken
+        }
+
+        $Certificate = New-SCEPmanCertificate @NewCertificate_Params
 
         Set-Content -Path $TempFile -Value $Certificate.ExportCertificatePem()
 
