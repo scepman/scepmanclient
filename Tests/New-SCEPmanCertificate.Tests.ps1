@@ -1,7 +1,7 @@
 BeforeAll {
     $ModuleRoot = "$PSScriptRoot\..\SCEPmanClient\"
 
-    Import-Module "$ModuleRoot\SCEPmanClient.psm1"
+    Import-Module "$ModuleRoot\SCEPmanClient.psm1" -Force
 
     # A real self-signed certificate so the typed output path (Get-MergedCertificate) binds correctly
     $script:DummyRsa = [System.Security.Cryptography.RSA]::Create(2048)
@@ -22,6 +22,7 @@ Describe "New-SCEPmanCertificate" {
         Mock Connect-SCEPmanAzAccount {} -ModuleName SCEPmanClient
         Mock Get-SCEPmanResourceUrl { 'api://resource-id' } -ModuleName SCEPmanClient
         Mock Get-SCEPmanAccessToken { 'az-token' } -ModuleName SCEPmanClient
+        Mock Get-AzContext {} -ModuleName SCEPmanClient
 
         # Avoid running real crypto for key generation / CSR building; return the shared dummy key/cert
         Mock New-PrivateKey { $script:DummyRsa } -ModuleName SCEPmanClient
@@ -29,7 +30,7 @@ Describe "New-SCEPmanCertificate" {
         Mock Get-MergedCertificate { $script:DummyCert } -ModuleName SCEPmanClient
 
         Mock Invoke-ESTRequest {
-            param($Url, $Endpoint, $Request, $AccessToken, $Credential)
+            param($Url, $Request, $AccessToken)
 
             $script:ESTCalls += [pscustomobject]@{
                 Url         = $Url
@@ -61,6 +62,15 @@ Describe "New-SCEPmanCertificate" {
             Should -Invoke New-CSR -Times 1 -ModuleName SCEPmanClient
             Should -Invoke Invoke-ESTRequest -Times 1 -ModuleName SCEPmanClient
             $script:ESTCalls[0].AccessToken | Should -Be 'my-bearer-token'
+        }
+
+        It "requires an Azure context when deriving the subject from the current user" {
+            {
+                New-SCEPmanCertificate -Url "https://scepman.contoso.com" -AccessToken "my-bearer-token" -SubjectFromUserContext
+            } | Should -Throw '*SubjectFromUserContext requires an active Azure context*'
+
+            Should -Invoke New-CSR -Times 0 -ModuleName SCEPmanClient
+            Should -Invoke Invoke-ESTRequest -Times 0 -ModuleName SCEPmanClient
         }
     }
 

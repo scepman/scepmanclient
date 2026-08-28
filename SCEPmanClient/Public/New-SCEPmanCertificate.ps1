@@ -344,8 +344,13 @@ Function New-SCEPmanCertificate {
                 $Request_Params = @{}
                 If ($PSBoundParameters.ContainsKey('SubjectFromUserContext')) {
                     Write-Verbose "$($MyInvocation.MyCommand): SubjectFromUserContext is set. Using current user context for subject"
-                    $Request_Params['Subject'] = "CN=$((Get-AzContext).Account.id)"
-                    $Request_Params['UPN'] = (Get-AzContext).Account.id
+                    $AzContext = Get-AzContext
+                    If (-not $AzContext) {
+                        throw "$($MyInvocation.MyCommand): SubjectFromUserContext requires an active Azure context. Run Connect-AzAccount before using this option with AccessToken."
+                    }
+
+                    $Request_Params['Subject'] = "CN=$($AzContext.Account.Id)"
+                    $Request_Params['UPN'] = $AzContext.Account.Id
                 }
                 If ($PSBoundParameters.ContainsKey('SubjectFromHostname')) {
                     Write-Verbose "$($MyInvocation.MyCommand): SubjectFromHostname is set. Using hostname for subject: $(hostname)"

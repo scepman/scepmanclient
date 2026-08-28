@@ -94,8 +94,6 @@ Function New-SCEPmanKeyVaultCertificate {
     )
 
     Begin {
-        $TempFile = New-TemporaryFile
-
         If($PSCmdlet.ParameterSetName -eq 'AzAuth') {
             Set-AzConfig -Scope Process -LoginExperienceV2 Off -DisplaySurveyMessage $false | Out-Null
 
@@ -108,7 +106,11 @@ Function New-SCEPmanKeyVaultCertificate {
             If ($PSBoundParameters.ContainsKey('ClientSecret')) { $Connect_Params['ClientSecret'] = $ClientSecret }
 
             Connect-SCEPmanAzAccount @Connect_Params
+        } ElseIf (-not (Get-AzContext)) {
+            throw "$($MyInvocation.MyCommand): Key Vault operations require an active Azure context. Run Connect-AzAccount before using AccessToken."
         }
+
+        $TempFile = New-TemporaryFile
     }
 
     Process {
