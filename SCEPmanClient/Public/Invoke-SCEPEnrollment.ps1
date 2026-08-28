@@ -4,7 +4,7 @@
 
 .DESCRIPTION
     Performs initial SCEP enrollment using PKCSReq (messageType 19). Unlike SCEP renewal,
-    no existing certificate is needed — a self-signed certificate is created from the
+    no existing certificate is needed - a self-signed certificate is created from the
     request's key pair to act as the PKCS#7 signer.
 
 .PARAMETER Url
