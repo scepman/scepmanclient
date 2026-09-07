@@ -28,7 +28,7 @@
   )
 
   FunctionsToExport = @(
-    'Get-ESTRootCA',
+    'Get-SCEPmanRootCA',
     'Invoke-ESTmTLSRequest',
     'Invoke-ESTRequest',
     'Invoke-SCEPEnrollment',

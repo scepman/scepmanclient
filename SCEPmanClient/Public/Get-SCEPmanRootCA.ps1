@@ -2,13 +2,14 @@
     .SYNOPSIS
     Get the root CA certificate from SCEPman.
 
-    .PARAMETER Url
-    The URL of the SCEPman app service.
+    .DESCRIPTION
+    Gets the root CA certificate from the SCEPman CA endpoint.
 
-    .PARAMETER Endpoint
-    The endpoint to get the root CA certificate from. Default is '/ca'.
+    .PARAMETER Url
+    The URL of the SCEPman service.
+
     .EXAMPLE
-    Get-SCEPmanRootCA -AppServiceUrl 'https://scepman.contoso.com'
+    Get-SCEPmanRootCA -AppServiceUrl 'https://scepman.example.com'
 
     .OUTPUTS
     System.Security.Cryptography.X509Certificates.X509Certificate2Collection
@@ -20,11 +21,10 @@ Function Get-SCEPmanRootCA {
     Param(
         [Parameter(Mandatory)]
         [Alias('AppServiceUrl')]
-        [String]$Url,
-        [String]$Endpoint = '/ca'
+        [String]$Url
     )
 
-    $Uri = Join-UrlPath -Url $Url -Endpoint $Endpoint
+    $Uri = Join-UrlPath -Url $Url -Endpoint '/ca'
 
     Write-Verbose "$($MyInvocation.MyCommand): Getting root CA from $Uri"
     $Response = Invoke-WebRequest -Uri $Uri -Method GET
