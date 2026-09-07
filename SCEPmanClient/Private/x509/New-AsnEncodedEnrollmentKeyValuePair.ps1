@@ -22,6 +22,8 @@
 
 Function New-AsnEncodedEnrollmentKeyValuePair {
     [CmdletBinding()]
+    [OutputType([System.Security.Cryptography.AsnEncodedData])]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "", Justification="Only creates an ephemeral, in-memory ASN.1 object; no system state is changed.")]
     Param(
         [Parameter(Mandatory)]
         [String]$Name,

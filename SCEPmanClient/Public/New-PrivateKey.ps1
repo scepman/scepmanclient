@@ -20,6 +20,8 @@
 #>
 
 Function New-PrivateKey {
+    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "", Justification="Only creates an ephemeral, in-memory key; no system state is changed.")]
     Param(
         [Parameter()]
         [ValidateSet('RSA', 'ECDSA')]

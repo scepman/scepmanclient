@@ -102,6 +102,9 @@ Function New-CSR {
         [ValidityPeriod]$ValidityPeriod = [ValidityPeriod]::Days,
         [Int]$ValidityPeriodUnits,
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPlainTextForPassword", "", Justification="Meant to be passed as plain text for ease of use; callers are expected to handle it securely.")]
+        [String]$ChallengePassword,
+
         [Switch]$Raw
     )
 
@@ -220,6 +223,20 @@ Function New-CSR {
 
         $Request.OtherRequestAttributes.Add($ValidityPeriodObject)
         $Request.OtherRequestAttributes.Add($ValidityPeriodUnitsObject)
+    }
+
+    If ($ChallengePassword) {
+        # CertificateRequest.OtherRequestAttributes is always null under Windows PowerShell's .NET Framework CertificateRequest implementation and cannot be populated
+        If ($PSVersionTable.PSEdition -ne 'Core') {
+            Throw "$($MyInvocation.MyCommand): ChallengePassword requires PowerShell 7+ (Core edition) and is not supported in Windows PowerShell"
+        }
+
+        # UTF8String tag (0x0C); DER length octets computed manually since System.Formats.Asn1 is unavailable in Windows PowerShell
+        $ChallengePasswordBody = [System.Text.Encoding]::UTF8.GetBytes($ChallengePassword)
+        $ChallengePasswordHeader = [Byte[]]@([Byte]0x0C) + (Get-DerLengthBytes -Length $ChallengePasswordBody.Length)
+        $ChallengePasswordData = $ChallengePasswordHeader + $ChallengePasswordBody
+        $ChallengePasswordAttribute = [System.Security.Cryptography.AsnEncodedData]::new($constant_ChallengePasswordOid, $ChallengePasswordData)
+        $Request.OtherRequestAttributes.Add($ChallengePasswordAttribute)
     }
 
     If($Raw) {

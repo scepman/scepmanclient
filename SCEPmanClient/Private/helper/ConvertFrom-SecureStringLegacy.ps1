@@ -14,13 +14,23 @@
 
 function ConvertFrom-SecureStringLegacy {
     [CmdletBinding()]
+    [OutputType([String])]
 
     Param(
         [Parameter(Mandatory, ValueFromPipeline)]
         [SecureString]$SecureString
     )
 
-    [System.Runtime.InteropServices.Marshal]::PtrToStringAuto(
-        [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecureString)
-    )
+    Process {
+        $Bstr = [IntPtr]::Zero
+
+        try {
+            $Bstr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecureString)
+            [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR($Bstr)
+        } finally {
+            if ($Bstr -ne [IntPtr]::Zero) {
+                [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($Bstr)
+            }
+        }
+    }
 }

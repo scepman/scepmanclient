@@ -91,7 +91,7 @@ Function Invoke-ESTmTLSRequest {
         $null = $handler.SslOptions.ClientCertificates.Add($Certificate)
     }
 
-    $Uri = ($Url -replace '/$') + $Endpoint
+    $Uri = Join-UrlPath -Url $Url -Endpoint $Endpoint
 
     $requestmessage = [System.Net.Http.HttpRequestMessage]::new()
     $requestmessage.Content = [System.Net.Http.StringContent]::new(

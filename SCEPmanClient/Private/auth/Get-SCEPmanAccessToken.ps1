@@ -32,6 +32,7 @@ Function Get-SCEPmanAccessToken {
         }
     }
     Catch {
+        Write-Debug "$($MyInvocation.MyCommand): Failed to get access token for resource $ResourceUrl - $_"
         # We are not throwing the actual exception as it likely only tells the user that an interaction is required
         Throw "$($MyInvocation.MyCommand): Failed to get access token for resource $ResourceUrl - Check your assigned role in this application - Make sure to authorize 1950a258-227b-4e31-a9cf-717495945fc2 (Microsoft Azure PowerShell) to this app registration"
     }
@@ -57,8 +58,11 @@ Function Get-SCEPmanAccessToken {
     If(($Claims.roles -contains 'CSR.SelfService') -or ($Claims.roles -contains 'CSR.Request.Db')) {
         Write-Verbose "$($MyInvocation.MyCommand): Found required role in $($Claims.roles)"
         Return $Token
+    } elseif ($Claims.roles -contains 'Manage.All') {
+        Write-Verbose "$($MyInvocation.MyCommand): Found 'Manage.All' role in $($Claims.roles). Requests might not work as intended, but management operations should work."
+        Return $Token
     } else {
-        Write-Verbose "$($MyInvocation.MyCommand): The token does not have the required role 'CSR.SelfService' or 'CSR.Request.Db' in $($Claims.roles). Request might not work as intended."
+        Write-Verbose "$($MyInvocation.MyCommand): The token does not have the required role 'CSR.SelfService' or 'CSR.Request.Db' in '$($Claims.roles)'. Request might not work as intended. It also does not have the 'Manage.All' role which is required for management operations."
         Return $Token
     }
 }

@@ -11,6 +11,10 @@
 .PARAMETER ResourceUrl
     The URL of the SCEPman service. If not provided, the function will try to find the Enterprise Application for the URL.
 
+.PARAMETER AccessToken
+    A bearer token for the SCEPman API. When provided, the function uses this token directly for the EST request instead of acquiring one from Azure. This is an alternative to the Azure-based authentication path.
+    Note: -SubjectFromUserContext and -SaveToKeyVault still require a live Azure context even when a token is supplied.
+
 .PARAMETER IgnoreExistingSession
     Ignore existing Azure session.
 
@@ -122,6 +126,7 @@ Function New-SCEPmanCertificate {
     [CmdletBinding(DefaultParameterSetName='AzAuth')]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "", Justification="The parameter PlainTextPassword is meant to be.. plain text.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPlainTextForPassword", "", Justification="The parameter PlainTextPassword is meant to be.. plain text.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "", Justification="Certificate issuance requires external communication with the EST/SCEP server; a meaningful ShouldProcess implementation is not feasible here.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingUsernameAndPasswordParams", "", Justification="Service principal authentication requires username and password.")]
     Param(
         [Parameter(
@@ -129,8 +134,19 @@ Function New-SCEPmanCertificate {
             ParameterSetName='AzAuth',
             Position=0
         )]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='SCEPEnrollment',
+            Position=0
+        )]
+        [Parameter(
+            Mandatory,
+            ParameterSetName='DirectTokenAuth',
+            Position=0
+        )]
         [Alias('AppServiceUrl')]
         [String]$Url,
+        [String]$Endpoint,
         [Parameter(ParameterSetName='AzAuth')]
         [String]$ResourceUrl,
 
@@ -156,9 +172,17 @@ Function New-SCEPmanCertificate {
         [Parameter(ParameterSetName='CertAuthFromFile')]
         [String]$KeyFromFile,
 
+        [Parameter(Mandatory, ParameterSetName='DirectTokenAuth')]
+        [String]$AccessToken,
+
         [String]$Csr,
 
         [Switch]$UseSCEPRenewal,
+
+        [Parameter(Mandatory, ParameterSetName='SCEPEnrollment')]
+        [Switch]$UseSCEPEnrollment,
+        [Parameter(Mandatory, ParameterSetName='SCEPEnrollment')]
+        [String]$ChallengePassword,
 
         [Switch]$SubjectFromUserContext,
         [Switch]$SubjectFromHostname,
@@ -283,35 +307,38 @@ Function New-SCEPmanCertificate {
 
     Process {
 
-        If($PSCmdlet.ParameterSetName -in 'CertAuthFromObject', 'CertAuthFromStore') {
+        If($PSCmdlet.ParameterSetName -in 'CertAuthFromObject', 'CertAuthFromStore', 'CertAuthFromFile') {
             $Url = Get-AppServiceUrlFromCertificate -Certificate $Certificate
-            $PrivateKey = New-PrivateKeyFromCertificate -Certificate $Certificate
+
+            $PrivateKey = If($PSCmdlet.ParameterSetName -eq 'CertAuthFromFile') {
+                $Certificate.PrivateKey
+            } Else {
+                New-PrivateKeyFromCertificate -Certificate $Certificate
+            }
 
             If($UseSCEPRenewal) {
-                $RootCertificate = Get-ESTRootCA -Url $Url
-                $Request = New-CSRfromCertificate -Certificate $Certificate -PrivateKey $PrivateKey -Raw
-                $NewCertificate = Invoke-SCEPRenewal -Url $Url -SignerCertificate $Certificate -RecipientCertificate $RootCertificate -RawRequest $Request
+                $Cert_Request_Params = @{
+                    'Url' = $Url
+                    'SignerCertificate' = $Certificate
+                    'RecipientCertificate' = Get-SCEPmanRootCA -Url $Url
+                    'RawRequest' = New-CSRfromCertificate -Certificate $Certificate -PrivateKey $PrivateKey -Raw
+                }
+                If($PSBoundParameters.ContainsKey('Endpoint')) { $Cert_Request_Params['Endpoint'] = $Endpoint }
+
+                $NewCertificate = Invoke-SCEPRenewal @Cert_Request_Params
             } Else {
-                $Request = New-CSRfromCertificate -Certificate $Certificate -PrivateKey $PrivateKey
-                $NewCertificate = Invoke-ESTmTLSRequest -AppServiceUrl $Url -Certificate $Certificate -Request $Request
+                $Cert_Request_Params = @{
+                    'AppServiceUrl' = $Url
+                    'Certificate' = $Certificate
+                    'Request' = New-CSRfromCertificate -Certificate $Certificate -PrivateKey $PrivateKey
+                }
+                If($PSBoundParameters.ContainsKey('Endpoint')) { $Cert_Request_Params['Endpoint'] = $Endpoint }
+
+                $NewCertificate = Invoke-ESTmTLSRequest @Cert_Request_Params
             }
         }
 
-        If($PSCmdlet.ParameterSetName -eq 'CertAuthFromFile') {
-            $Url = Get-AppServiceUrlFromCertificate -Certificate $Certificate
-            $PrivateKey = $Certificate.PrivateKey
-
-            If($UseSCEPRenewal) {
-                $RootCertificate = Get-ESTRootCA -Url $Url
-                $Request = New-CSRfromCertificate -Certificate $Certificate -PrivateKey $PrivateKey -Raw
-                $NewCertificate = Invoke-SCEPRenewal -Url $Url -SignerCertificate $Certificate -RecipientCertificate $RootCertificate -RawRequest $Request
-            } Else {
-                $Request = New-CSRfromCertificate -Certificate $Certificate -PrivateKey $PrivateKey
-                $NewCertificate = Invoke-ESTmTLSRequest -AppServiceUrl $Url -Certificate $Certificate -Request $Request
-            }
-        }
-
-        If($PSCmdlet.ParameterSetName -eq 'AzAuth') {
+        If($PSCmdlet.ParameterSetName -in 'AzAuth', 'DirectTokenAuth') {
 
             If($PSBoundParameters.ContainsKey('Csr')) {
                 $Request = $Csr
@@ -324,8 +351,12 @@ Function New-SCEPmanCertificate {
                 $Request_Params = @{}
                 If ($PSBoundParameters.ContainsKey('SubjectFromUserContext')) {
                     Write-Verbose "$($MyInvocation.MyCommand): SubjectFromUserContext is set. Using current user context for subject"
-                    $Request_Params['Subject'] = "CN=$((Get-AzContext).Account.id)"
-                    $Request_Params['UPN'] = (Get-AzContext).Account.id
+                    $AzContext = Get-AzContext
+                    If (-not $AzContext) {
+                        throw "$($MyInvocation.MyCommand): SubjectFromUserContext requires an active Azure context. Run Connect-AzAccount before using this option with AccessToken."
+                    }
+                    $Request_Params['Subject'] = "CN=$($AzContext.Account.Id)"
+                    $Request_Params['UPN'] = $AzContext.Account.Id
                 }
                 If ($PSBoundParameters.ContainsKey('SubjectFromHostname')) {
                     Write-Verbose "$($MyInvocation.MyCommand): SubjectFromHostname is set. Using hostname for subject: $(hostname)"
@@ -346,25 +377,55 @@ Function New-SCEPmanCertificate {
                 $Request = New-CSR -PrivateKey $PrivateKey @Request_Params
             }
 
-            $NewCertificate = Invoke-ESTRequest -AppServiceUrl $Url -AccessToken $AccessToken -Request $Request
-
-        } ElseIf($PSCmdlet.ParameterSetName -in 'CertAuthFromObject', 'CertAuthFromStore', 'CertAuthFromFile') {
-            $Url = Get-AppServiceUrlFromCertificate -Certificate $Certificate
-
-            $PrivateKey = If($PSCmdlet.ParameterSetName -eq 'CertAuthFromFile') {
-                $Certificate.PrivateKey
-            } Else {
-                New-PrivateKeyFromCertificate -Certificate $Certificate
+            $Cert_Request_Params = @{
+                'AppServiceUrl' = $Url
+                'AccessToken' = $AccessToken
+                'Request' = $Request
             }
 
-            If($UseSCEPRenewal) {
-                $RootCertificate = Get-ESTRootCA -Url $Url
-                $Request = New-CSRfromCertificate -Certificate $Certificate -PrivateKey $PrivateKey -Raw
-                $NewCertificate = Invoke-SCEPRenewal -Url $Url -SignerCertificate $Certificate -RecipientCertificate $RootCertificate -RawRequest $Request
-            } Else {
-                $Request = New-CSRfromCertificate -Certificate $Certificate -PrivateKey $PrivateKey
-                $NewCertificate = Invoke-ESTmTLSRequest -AppServiceUrl $Url -Certificate $Certificate -Request $Request
+            If($PSBoundParameters.ContainsKey('Endpoint')) { $Cert_Request_Params['Endpoint'] = $Endpoint }
+
+            $NewCertificate = Invoke-ESTRequest @Cert_Request_Params
+
+        } ElseIf($PSCmdlet.ParameterSetName -eq 'SCEPEnrollment') {
+
+            $PrivateKey_Params = @{}
+            If($PSBoundParameters.ContainsKey('SignatureAlgorithm')) { $PrivateKey_Params['Algorithm'] = $SignatureAlgorithm }
+
+            $PrivateKey = New-PrivateKey @PrivateKey_Params
+
+            $Request_Params = @{
+                'Raw' = $true
+                'ChallengePassword' = $ChallengePassword
             }
+            If ($PSBoundParameters.ContainsKey('SubjectFromHostname')) {
+                Write-Verbose "$($MyInvocation.MyCommand): SubjectFromHostname is set. Using hostname for subject: $(hostname)"
+                $Request_Params['Subject'] = "CN=$(hostname)"
+            }
+            If($PSBoundParameters.ContainsKey('Subject')) { $Request_Params['Subject'] = $Subject }
+            If($PSBoundParameters.ContainsKey('UPN')) { $Request_Params['UPN'] = $UPN }
+            If($PSBoundParameters.ContainsKey('Email')) { $Request_Params['Email'] = $Email }
+            If($PSBoundParameters.ContainsKey('DNSName')) { $Request_Params['DNSName'] = $DNSName }
+            If($PSBoundParameters.ContainsKey('URI')) { $Request_Params['URI'] = $URI }
+            If($PSBoundParameters.ContainsKey('IP')) { $Request_Params['IP'] = $IP }
+            If($PSBoundParameters.ContainsKey('KeyUsage')) { $Request_Params['KeyUsage'] = $KeyUsage }
+            If($PSBoundParameters.ContainsKey('ExtendedKeyUsage')) { $Request_Params['ExtendedKeyUsage'] = $ExtendedKeyUsage }
+            If($PSBoundParameters.ContainsKey('ExtendedKeyUsageOid')) { $Request_Params['ExtendedKeyUsageOid'] = $ExtendedKeyUsageOid }
+            If($PSBoundParameters.ContainsKey('ValidityPeriod')) { $Request_Params['ValidityPeriod'] = $ValidityPeriod }
+            If($PSBoundParameters.ContainsKey('ValidityPeriodUnits')) { $Request_Params['ValidityPeriodUnits'] = $ValidityPeriodUnits }
+
+            $RawRequest = New-CSR -PrivateKey $PrivateKey @Request_Params
+
+            $Cert_Request_Params = @{
+                'Url' = $Url
+                'RecipientCertificate' = Get-SCEPmanRootCA -Url $Url
+                'RawRequest' = $RawRequest
+            }
+
+            If($PSBoundParameters.ContainsKey('Endpoint')) { $Cert_Request_Params['Endpoint'] = $Endpoint }
+
+            $NewCertificate = Invoke-SCEPEnrollment @Cert_Request_Params
+
         }
 
         If ($PSBoundParameters.ContainsKey('SaveToStore')) {
@@ -422,7 +483,7 @@ Function New-SCEPmanCertificate {
 
                 If (-not $PSBoundParameters.ContainsKey('IncludeRootCA')) {
                     Write-Verbose "$($MyInvocation.MyCommand): Saving root CA certificate to folder $SaveToFolder"
-                    $RootCertificate = Get-ESTRootCA -AppServiceUrl $Url
+                    $RootCertificate = Get-SCEPmanRootCA -AppServiceUrl $Url
                     Save-CertificateToFile -Certificate $RootCertificate -FilePath "$SaveToFolder\$($RootCertificate.Subject)" -Format $Format
                 }
             }

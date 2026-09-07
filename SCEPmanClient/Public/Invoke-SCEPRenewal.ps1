@@ -43,7 +43,7 @@ Function Invoke-SCEPRenewal {
 
     $WebClient = New-Object System.Net.WebClient
 
-    $Uri = ($Url -replace '/$') + $Endpoint
+    $Uri = Join-UrlPath -Url $Url -Endpoint $Endpoint
 
     Write-Verbose "$($MyInvocation.MyCommand): Sending SCEP renewal request to $Uri"
 
