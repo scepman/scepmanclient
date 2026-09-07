@@ -1,0 +1,2 @@
+SmokeTests/Configs/*.json
+!SmokeTests/Configs/*.template.json
