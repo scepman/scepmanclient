@@ -12,6 +12,18 @@ BeforeAll {
         [System.Security.Cryptography.RSASignaturePadding]::Pkcs1
     )
     $script:DummyCert = $script:DummyCertRequest.CreateSelfSigned([DateTimeOffset]::UtcNow, [DateTimeOffset]::UtcNow.AddDays(1))
+
+    $script:RenewalRsa = [System.Security.Cryptography.RSA]::Create(2048)
+    $script:RenewalCertRequest = [System.Security.Cryptography.X509Certificates.CertificateRequest]::new(
+        "CN=Test",
+        $script:RenewalRsa,
+        [System.Security.Cryptography.HashAlgorithmName]::SHA256,
+        [System.Security.Cryptography.RSASignaturePadding]::Pkcs1
+    )
+    $RenewalCertWithKey = $script:RenewalCertRequest.CreateSelfSigned([DateTimeOffset]::UtcNow, [DateTimeOffset]::UtcNow.AddDays(1))
+    $script:RenewalCert = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new(
+        $RenewalCertWithKey.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert)
+    )
 }
 
 Describe "New-SCEPmanCertificate" {
@@ -27,7 +39,6 @@ Describe "New-SCEPmanCertificate" {
         # Avoid running real crypto for key generation / CSR building; return the shared dummy key/cert
         Mock New-PrivateKey { $script:DummyRsa } -ModuleName SCEPmanClient
         Mock New-CSR { 'dummy-csr' } -ModuleName SCEPmanClient
-        Mock Get-MergedCertificate { $script:DummyCert } -ModuleName SCEPmanClient
 
         Mock Invoke-ESTRequest {
             param($Url, $Request, $AccessToken)
@@ -83,6 +94,31 @@ Describe "New-SCEPmanCertificate" {
 
             Should -Invoke Invoke-ESTRequest -Times 1 -ModuleName SCEPmanClient
             $script:ESTCalls[0].AccessToken | Should -Be 'az-token'
+        }
+    }
+
+    Context "Certificate renewal" {
+        It "rejects multiple certificates found by subject" {
+            Mock Get-ChildItem { @($script:DummyCert) } -ModuleName SCEPmanClient
+
+            {
+                New-SCEPmanCertificate -CertificateBySubject 'CN=Test'
+            } | Should -Throw '*Multiple certificates found with subject: CN=Test*Only one certificate can be renewed at a time*'
+
+            Should -Invoke Get-ChildItem -Times 2 -ModuleName SCEPmanClient
+        }
+
+        It "renews from a certificate object and merges the matching certificate from the returned chain" {
+            Mock Get-AppServiceUrlFromCertificate { 'https://scepman.contoso.com' } -ModuleName SCEPmanClient
+            Mock New-PrivateKeyFromCertificate { $script:RenewalRsa } -ModuleName SCEPmanClient
+            Mock New-CSRFromCertificate { 'renewal-csr' } -ModuleName SCEPmanClient
+            Mock Invoke-ESTmTLSRequest { @($script:DummyCert, $script:RenewalCert) } -ModuleName SCEPmanClient
+
+            $Certificate = New-SCEPmanCertificate -Certificate $script:DummyCert
+
+            $Certificate | Should -BeOfType ([System.Security.Cryptography.X509Certificates.X509Certificate2])
+            $Certificate.Thumbprint | Should -Be $script:RenewalCert.Thumbprint
+            $Certificate.HasPrivateKey | Should -BeTrue
         }
     }
 }
