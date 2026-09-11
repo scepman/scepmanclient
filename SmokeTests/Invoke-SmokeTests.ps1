@@ -433,7 +433,7 @@ function Invoke-SmokeScenario {
     }
 }
 
-$ModulePath = Join-Path $PSScriptRoot '..\SCEPmanClient\SCEPmanClient.psm1'
+$ModulePath = [IO.Path]::Combine($PSScriptRoot, '..', 'SCEPmanClient', 'SCEPmanClient.psm1')
 Import-Module $ModulePath -Force
 
 $ResolvedConfigPaths = $ConfigPath | ForEach-Object {
@@ -451,8 +451,8 @@ foreach ($Path in $ResolvedConfigPaths) {
         [IO.Path]::GetFileNameWithoutExtension($Path)
     }
 
-    if (-not (Test-JsonProperty -InputObject $Configuration -Name 'Scenarios')) {
-        throw "Configuration '$Path' does not contain a Scenarios array."
+if (-not (Test-JsonProperty -InputObject $Configuration -Name 'Scenarios') -or $null -eq $Configuration.Scenarios -or @($Configuration.Scenarios).Count -eq 0) {
+        throw "Configuration '$Path' does not contain a non-empty Scenarios array."
     }
 
     $Certificates = [Collections.Generic.Dictionary[String, System.Security.Cryptography.X509Certificates.X509Certificate2]]::new([StringComparer]::OrdinalIgnoreCase)
