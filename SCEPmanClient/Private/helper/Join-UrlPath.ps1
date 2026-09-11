@@ -3,8 +3,8 @@
     Joins a base URL and an endpoint path into a single, well-formed URI.
 
 .DESCRIPTION
-    Ensures exactly one '/' separates the base URL and the endpoint, regardless of
-    whether either value already has leading/trailing slashes.
+    Defaults scheme-less URLs to HTTPS and ensures exactly one '/' separates the
+    base URL and endpoint. Explicit HTTP and HTTPS schemes are preserved.
 
 .PARAMETER Url
     The base URL.
@@ -25,6 +25,10 @@ Function Join-UrlPath {
         [Parameter(Mandatory)]
         [String]$Endpoint
     )
+
+    If ($Url -notmatch '^https?://') {
+        $Url = 'https://' + $Url
+    }
 
     Return ($Url -replace '/$') + '/' + ($Endpoint -replace '^/')
 }

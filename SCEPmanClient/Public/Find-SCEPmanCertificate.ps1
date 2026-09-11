@@ -126,8 +126,6 @@ Function Find-SCEPmanCertificate {
     }
 
     Process {
-        $BaseUrl = $Url.TrimEnd('/')
-
         $Headers = @{
             'Authorization' = "Bearer $AccessToken"
         }
@@ -146,7 +144,7 @@ Function Find-SCEPmanCertificate {
                 '{0}={1}' -f [uri]::EscapeDataString($_.Key), [uri]::EscapeDataString([string]$_.Value)
             }) -join '&'
 
-        $RequestUrl = "$BaseUrl/api/manage/search"
+        $RequestUrl = Join-UrlPath -Url $Url -Endpoint '/api/manage/search'
         If (-not [string]::IsNullOrWhiteSpace($QueryString)) {
             $RequestUrl = "{0}?{1}" -f $RequestUrl, $QueryString
         }

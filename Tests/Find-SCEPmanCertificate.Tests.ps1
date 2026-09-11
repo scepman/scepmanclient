@@ -24,7 +24,7 @@ Describe "Find-SCEPmanCertificate" {
     }
 
     It "builds the search query and calls the API using bearer auth" {
-        Find-SCEPmanCertificate -Url "https://scepman.contoso.com" -SearchText "alice@contoso.com" -PageSize 50 -CertValidity "Any" -CertType "Any" | Out-Null
+        Find-SCEPmanCertificate -Url "scepman.contoso.com" -SearchText "alice@contoso.com" -PageSize 50 -CertValidity "Any" -CertType "Any" | Out-Null
 
         Should -Invoke Invoke-RestMethod -Times 1 -ModuleName SCEPmanClient
         $script:LastInvokeMethod | Should -Be 'Get'
@@ -34,6 +34,12 @@ Describe "Find-SCEPmanCertificate" {
         $script:LastInvokeUri | Should -Match 'PageSize=50'
         $script:LastInvokeUri | Should -Match 'CertValidity=Any'
         $script:LastInvokeUri | Should -Match 'CertType=Any'
+    }
+
+    It "preserves an explicit HTTP scheme" {
+        Find-SCEPmanCertificate -Url "http://scepman.contoso.com" -SearchText "alice" | Out-Null
+
+        $script:LastInvokeUri | Should -Match '^http://scepman\.contoso\.com/api/manage/search\?'
     }
 
     It "omits empty continuation token and resolves resource URL when not provided" {
