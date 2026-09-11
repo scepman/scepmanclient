@@ -258,6 +258,50 @@ function Assert-SmokeCertificate {
     }
 }
 
+function ConvertTo-WindowsMtlsCertificate {
+    param(
+        [Parameter(Mandatory)]
+        [System.Security.Cryptography.X509Certificates.X509Certificate2]$Certificate
+    )
+
+    if (-not $IsWindows) {
+        return $Certificate
+    }
+
+    $PrivateKey = if ($Certificate.PublicKey.Oid.Value -eq '1.2.840.113549.1.1.1') {
+        [System.Security.Cryptography.X509Certificates.RSACertificateExtensions]::GetRSAPrivateKey($Certificate)
+    } elseif ($Certificate.PublicKey.Oid.Value -eq '1.2.840.10045.2.1') {
+        [System.Security.Cryptography.X509Certificates.ECDsaCertificateExtensions]::GetECDsaPrivateKey($Certificate)
+    }
+
+    try {
+        $IsEphemeralCngKey = (
+            ($PrivateKey -is [System.Security.Cryptography.RSACng] -or $PrivateKey -is [System.Security.Cryptography.ECDsaCng]) -and
+            $PrivateKey.Key.IsEphemeral
+        )
+    } finally {
+        if ($null -ne $PrivateKey) {
+            $PrivateKey.Dispose()
+        }
+    }
+
+    if (-not $IsEphemeralCngKey) {
+        return $Certificate
+    }
+
+    $TemporaryPassword = [Guid]::NewGuid().ToString('N')
+    $Pkcs12 = $Certificate.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Pkcs12, $TemporaryPassword)
+    try {
+        return [System.Security.Cryptography.X509Certificates.X509Certificate2]::new(
+            $Pkcs12,
+            $TemporaryPassword,
+            [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::UserKeySet
+        )
+    } finally {
+        [Array]::Clear($Pkcs12, 0, $Pkcs12.Length)
+    }
+}
+
 function Invoke-SmokeScenario {
     param(
         [Parameter(Mandatory)]
@@ -272,6 +316,7 @@ function Invoke-SmokeScenario {
 
     $Protocol = Get-RequiredJsonValue -InputObject $TestScenario -Name 'Protocol' -Location "scenario '$($TestScenario.Name)'"
     $Parameters = @{}
+    $TemporaryCertificate = $null
 
     switch ($Protocol) {
         'EST' {
@@ -320,8 +365,14 @@ function Invoke-SmokeScenario {
                 throw "Scenario '$($TestScenario.Name)' requires successful source scenario '$SourceScenario' earlier in the same config."
             }
 
-            $Parameters.Certificate = $Certificates[$SourceScenario]
-            if ($Protocol -eq 'SCEPRenewal') {
+            if ($Protocol -eq 'ESTRenewal') {
+                # The preceding in-process enrollment returns an ephemeral CNG key that Windows Schannel cannot use directly.
+                $Parameters.Certificate = ConvertTo-WindowsMtlsCertificate -Certificate $Certificates[$SourceScenario]
+                if (-not [Object]::ReferenceEquals($Parameters.Certificate, $Certificates[$SourceScenario])) {
+                    $TemporaryCertificate = $Parameters.Certificate
+                }
+            } else {
+                $Parameters.Certificate = $Certificates[$SourceScenario]
                 $Parameters.UseSCEPRenewal = $true
             }
             Add-EndpointParameter -Parameters $Parameters -Configuration $Configuration -TestScenario $TestScenario
@@ -352,6 +403,9 @@ function Invoke-SmokeScenario {
             Set-AzContext -Context $OriginalContext -Scope Process | Out-Null
         } elseif ($UsesServicePrincipal) {
             Disconnect-AzAccount -Scope Process -ErrorAction SilentlyContinue | Out-Null
+        }
+        if ($null -ne $TemporaryCertificate) {
+            $TemporaryCertificate.Dispose()
         }
     }
 
