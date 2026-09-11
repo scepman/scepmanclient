@@ -18,6 +18,10 @@ Describe "New-CSR" {
     It "should return a valid CSR with validatable key usages" {
         $Request = New-CSR -PrivateKey (New-PrivateKey) -Subject "CN=Test" -ExtendedKeyUsage ClientAuth, ServerAuth -KeyUsage KeyEncipherment, DigitalSignature -Raw
 
-        $Request.CertificateExtensions.KeyUsages | Should -BeExactly 'KeyEncipherment, DigitalSignature'
+        $KeyUsageExtension = $Request.CertificateExtensions |
+            Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509KeyUsageExtension] }
+
+        $KeyUsageExtension | Should -Not -BeNullOrEmpty
+        $KeyUsageExtension.KeyUsages | Should -BeExactly 'KeyEncipherment, DigitalSignature'
     }
 }

@@ -115,8 +115,6 @@ Function Revoke-SCEPmanCertificate {
             $AccessToken = Get-SCEPmanAccessToken -ResourceUrl $ResourceUrl
         }
 
-        $BaseUrl = $Url.TrimEnd('/')
-
         $Headers = @{
             'Authorization' = "Bearer $AccessToken"
             'Content-Type'  = 'application/json'
@@ -126,7 +124,7 @@ Function Revoke-SCEPmanCertificate {
 
     Process {
         foreach ($Serial in $SerialNumber) {
-            $RequestUrl = "$BaseUrl/api/manage/revoke/$Serial"
+            $RequestUrl = Join-UrlPath -Url $Url -Endpoint "/api/manage/revoke/$Serial"
 
             $Body = @{
                 revocationReason = [int]$RevocationReason

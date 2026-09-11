@@ -241,19 +241,16 @@ Function New-SCEPmanCertificate {
 
             If ($PSBoundParameters.ContainsKey('CertificateBySubject')) {
                 Write-Verbose "$($MyInvocation.MyCommand): Trying to find certificate by subject: $CertificateBySubject"
-                $AllCertificates = (Get-ChildItem Cert:\CurrentUser\My\) + (Get-ChildItem Cert:\LocalMachine\My\)
+                $AllCertificates = @(Get-ChildItem Cert:\CurrentUser\My\) + @(Get-ChildItem Cert:\LocalMachine\My\)
 
-                $Certificate = $AllCertificates | Where-Object { $_.Subject -match $CertificateBySubject }
+                $MatchingCertificates = @($AllCertificates | Where-Object { $_.Subject -match $CertificateBySubject })
 
-                If (-not $Certificate) {
+                If ($MatchingCertificates.Count -eq 0) {
                     throw "$($MyInvocation.MyCommand): No certificate found with subject: $CertificateBySubject"
-                } ElseIf ($Certificate.Count -gt 1) {
-                    Write-Verbose "$($MyInvocation.MyCommand): Multiple certificates found by subject: $CertificateBySubject"
-
-                    $Certificate = $Certificate | Select-Object -First 1
-
-                    Write-Verbose "$($MyInvocation.MyCommand): Select first certificate with thumbprint: $($Certificate.Thumbprint)"
+                } ElseIf ($MatchingCertificates.Count -gt 1) {
+                    throw "$($MyInvocation.MyCommand): Multiple certificates found with subject: $CertificateBySubject. Only one certificate can be renewed at a time. Use -Certificate with a specific certificate or make -CertificateBySubject more specific."
                 } Else {
+                    $Certificate = $MatchingCertificates[0]
                     Write-Verbose "$($MyInvocation.MyCommand): Found certificate by subject: $($Certificate.Subject)"
                     Write-Verbose "$($MyInvocation.MyCommand): Thumbprint: $($Certificate.Thumbprint)"
                 }
@@ -276,6 +273,8 @@ Function New-SCEPmanCertificate {
 
             If ($PSBoundParameters.ContainsKey('NoPassword')) {
                 $Certificate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::CreateFromPem($PEM, $Key)
+            } ElseIf ($PSBoundParameters.ContainsKey('PlainTextPassword')) {
+                $Certificate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::CreateFromEncryptedPem($PEM, $Key, $PlainTextPassword)
             } Else {
                 $Password = Read-Host -Prompt "Enter password for private key" -AsSecureString
                 $Certificate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::CreateFromEncryptedPem($PEM, $Key, ($Password | ConvertFrom-SecureString -AsPlainText))
@@ -472,12 +471,12 @@ Function New-SCEPmanCertificate {
 
                 If (-not $PSBoundParameters.ContainsKey('KeyFromFile')) {
                     Write-Verbose "$($MyInvocation.MyCommand): Saving private key to folder $SaveToFolder"
-                    If ( -not $PSBoundParameters.ContainsKey('NoPassword')) {
-                        Save-PrivateKeyToFile -PrivateKey $PrivateKey -FilePath "$SaveToFolder\$($NewCertificate.Subject).key" -Password (Read-Host -Prompt "Enter password for private key" -AsSecureString)
+                    If ($PSBoundParameters.ContainsKey('NoPassword')) {
+                        Save-PrivateKeyToFile -PrivateKey $PrivateKey -FilePath "$SaveToFolder\$($NewCertificate.Subject).key"
                     } ElseIf ($PSBoundParameters.ContainsKey('PlainTextPassword')) {
                         Save-PrivateKeyToFile -PrivateKey $PrivateKey -FilePath "$SaveToFolder\$($NewCertificate.Subject).key" -Password ($PlainTextPassword | ConvertTo-SecureString -AsPlainText -Force)
                     } Else {
-                        Save-PrivateKeyToFile -PrivateKey $PrivateKey -FilePath "$SaveToFolder\$($NewCertificate.Subject).key"
+                        Save-PrivateKeyToFile -PrivateKey $PrivateKey -FilePath "$SaveToFolder\$($NewCertificate.Subject).key" -Password (Read-Host -Prompt "Enter password for private key" -AsSecureString)
                     }
                 }
 

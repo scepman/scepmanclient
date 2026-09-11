@@ -30,7 +30,7 @@ Describe "Revoke-SCEPmanCertificate" {
     }
 
     It "sends a PATCH request with revocation reason and explicit revoker" {
-        Revoke-SCEPmanCertificate -Url "https://scepman.contoso.com" -SerialNumber "1A2B3C4D" -RevocationReason KeyCompromise -Revoker "admin@contoso.com" -ResourceUrl "api://given-resource" | Out-Null
+        Revoke-SCEPmanCertificate -Url "scepman.contoso.com" -SerialNumber "1A2B3C4D" -RevocationReason KeyCompromise -Revoker "admin@contoso.com" -ResourceUrl "api://given-resource" | Out-Null
 
         Should -Invoke Get-SCEPmanResourceUrl -Times 0 -ModuleName SCEPmanClient
         Should -Invoke Get-SCEPmanAccessToken -Times 1 -ModuleName SCEPmanClient -ParameterFilter {
@@ -44,6 +44,12 @@ Describe "Revoke-SCEPmanCertificate" {
         $script:InvokeCalls[0].Uri | Should -Be 'https://scepman.contoso.com/api/manage/revoke/1A2B3C4D'
         $script:InvokeCalls[0].Body.revocationReason | Should -Be 1
         $script:InvokeCalls[0].Body.revoker | Should -Be 'admin@contoso.com'
+    }
+
+    It "preserves an explicit HTTP scheme" {
+        Revoke-SCEPmanCertificate -Url "http://scepman.contoso.com" -SerialNumber "1A2B3C4D" -RevocationReason Unspecified -Revoker "admin@contoso.com" | Out-Null
+
+        $script:InvokeCalls[0].Uri | Should -Be 'http://scepman.contoso.com/api/manage/revoke/1A2B3C4D'
     }
 
     It "sends one request per serial number" {

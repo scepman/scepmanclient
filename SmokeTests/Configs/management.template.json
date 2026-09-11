@@ -1,0 +1,22 @@
+{
+  "Name": "Certificate management",
+  "Url": "https://scepman.example.com",
+  "ResourceUrl": "api://00000000-0000-0000-0000-000000000000",
+  "Scenarios": [
+    {
+      "Name": "Search certificates using Manage.All",
+      "Protocol": "ManagementSearch",
+      "Authentication": {
+        "Type": "ServicePrincipal",
+        "ClientId": "33333333-3333-3333-3333-333333333333",
+        "TenantId": "22222222-2222-2222-2222-222222222222",
+        "ClientSecret": "<client-secret>"
+      },
+      "Search": {
+        "PageSize": 1,
+        "CertValidity": "Any",
+        "CertType": "Any"
+      }
+    }
+  ]
+}
