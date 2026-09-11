@@ -273,6 +273,8 @@ Function New-SCEPmanCertificate {
 
             If ($PSBoundParameters.ContainsKey('NoPassword')) {
                 $Certificate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::CreateFromPem($PEM, $Key)
+            } ElseIf ($PSBoundParameters.ContainsKey('PlainTextPassword')) {
+                $Certificate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::CreateFromEncryptedPem($PEM, $Key, $PlainTextPassword)
             } Else {
                 $Password = Read-Host -Prompt "Enter password for private key" -AsSecureString
                 $Certificate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::CreateFromEncryptedPem($PEM, $Key, ($Password | ConvertFrom-SecureString -AsPlainText))
@@ -469,12 +471,12 @@ Function New-SCEPmanCertificate {
 
                 If (-not $PSBoundParameters.ContainsKey('KeyFromFile')) {
                     Write-Verbose "$($MyInvocation.MyCommand): Saving private key to folder $SaveToFolder"
-                    If ( -not $PSBoundParameters.ContainsKey('NoPassword')) {
-                        Save-PrivateKeyToFile -PrivateKey $PrivateKey -FilePath "$SaveToFolder\$($NewCertificate.Subject).key" -Password (Read-Host -Prompt "Enter password for private key" -AsSecureString)
+                    If ($PSBoundParameters.ContainsKey('NoPassword')) {
+                        Save-PrivateKeyToFile -PrivateKey $PrivateKey -FilePath "$SaveToFolder\$($NewCertificate.Subject).key"
                     } ElseIf ($PSBoundParameters.ContainsKey('PlainTextPassword')) {
                         Save-PrivateKeyToFile -PrivateKey $PrivateKey -FilePath "$SaveToFolder\$($NewCertificate.Subject).key" -Password ($PlainTextPassword | ConvertTo-SecureString -AsPlainText -Force)
                     } Else {
-                        Save-PrivateKeyToFile -PrivateKey $PrivateKey -FilePath "$SaveToFolder\$($NewCertificate.Subject).key"
+                        Save-PrivateKeyToFile -PrivateKey $PrivateKey -FilePath "$SaveToFolder\$($NewCertificate.Subject).key" -Password (Read-Host -Prompt "Enter password for private key" -AsSecureString)
                     }
                 }
 

@@ -97,6 +97,50 @@ Describe "New-SCEPmanCertificate" {
         }
     }
 
+    Context "PlainTextPassword forwarding" {
+        It "uses the supplied password when loading an encrypted private key" {
+            $CertificatePath = Join-Path $TestDrive 'certificate.pem'
+            $KeyPath = Join-Path $TestDrive 'private-key.pem'
+            $PbeParameters = [System.Security.Cryptography.PbeParameters]::new(
+                [System.Security.Cryptography.PbeEncryptionAlgorithm]::Aes256Cbc,
+                [System.Security.Cryptography.HashAlgorithmName]::SHA256,
+                20000
+            )
+
+            Set-Content -Path $CertificatePath -Value $script:DummyCert.ExportCertificatePem()
+            Set-Content -Path $KeyPath -Value $script:DummyRsa.ExportEncryptedPkcs8PrivateKeyPem('file-password', $PbeParameters)
+
+            Mock Read-Host { throw 'Password prompt was not expected' } -ModuleName SCEPmanClient
+            Mock Get-AppServiceUrlFromCertificate { 'https://scepman.contoso.com' } -ModuleName SCEPmanClient
+            Mock New-CSRFromCertificate { 'renewal-csr' } -ModuleName SCEPmanClient
+            Mock Invoke-ESTmTLSRequest { $Certificate } -ModuleName SCEPmanClient
+
+            {
+                New-SCEPmanCertificate -CertificateFromFile $CertificatePath -KeyFromFile $KeyPath -PlainTextPassword 'file-password'
+            } | Should -Not -Throw
+
+            Should -Invoke Read-Host -Times 0 -ModuleName SCEPmanClient
+            Should -Invoke Invoke-ESTmTLSRequest -Times 1 -ModuleName SCEPmanClient
+        }
+
+        It "uses the supplied password when exporting a PEM private key" {
+            $script:SavedPrivateKeyPassword = $null
+            Mock Read-Host { throw 'Password prompt was not expected' } -ModuleName SCEPmanClient
+            Mock Save-CertificateToFile {} -ModuleName SCEPmanClient
+            Mock Save-PrivateKeyToFile {
+                param($PrivateKey, $FilePath, $Password)
+                $script:SavedPrivateKeyPassword = $Password | ConvertFrom-SecureString -AsPlainText
+            } -ModuleName SCEPmanClient
+
+            New-SCEPmanCertificate -Url 'https://scepman.contoso.com' -AccessToken 'my-bearer-token' -Subject 'CN=Test' `
+                -SaveToFolder $TestDrive -Format PEM -IncludeRootCA -PlainTextPassword 'export-password' | Out-Null
+
+            Should -Invoke Read-Host -Times 0 -ModuleName SCEPmanClient
+            Should -Invoke Save-PrivateKeyToFile -Times 1 -ModuleName SCEPmanClient
+            $script:SavedPrivateKeyPassword | Should -Be 'export-password'
+        }
+    }
+
     Context "Certificate renewal" {
         It "rejects multiple certificates found by subject" {
             Mock Get-ChildItem { @($script:DummyCert) } -ModuleName SCEPmanClient
