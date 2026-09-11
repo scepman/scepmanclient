@@ -1,0 +1,34 @@
+{
+  "Name": "SCEP enrollment and renewal",
+  "Url": "https://scepman.example.com",
+  "Endpoint": "/static",
+  "Scenarios": [
+    {
+      "Name": "SCEP challenge enrollment",
+      "Protocol": "SCEP",
+      "ChallengePassword": "<challenge-password>",
+      "Request": {
+        "Subject": "CN=smoke-scep.example.com",
+        "DNSName": [
+          "smoke-scep.example.com"
+        ],
+        "ExtendedKeyUsage": [
+          "ClientAuth"
+        ]
+      },
+      "Expected": {
+        "SubjectRegex": "CN=smoke-scep\\.example\\.com",
+        "MinimumRemainingDays": 1
+      }
+    },
+    {
+      "Name": "SCEP renewal without auth context",
+      "Protocol": "SCEPRenewal",
+      "SourceScenario": "SCEP challenge enrollment",
+      "Expected": {
+        "SubjectRegex": "CN=smoke-scep\\.example\\.com",
+        "MinimumRemainingDays": 1
+      }
+    }
+  ]
+}

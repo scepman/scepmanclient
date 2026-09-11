@@ -1,0 +1,55 @@
+{
+  "Name": "EST enrollment",
+  "Url": "https://scepman.example.com",
+  "ResourceUrl": "api://00000000-0000-0000-0000-000000000000",
+  "Scenarios": [
+    {
+      "Name": "EST self-service using Azure CLI context",
+      "Protocol": "EST",
+      "Authentication": {
+        "Type": "AzureCli"
+      },
+      "Request": {
+        "SubjectFromUserContext": true,
+        "ExtendedKeyUsage": [
+          "ClientAuth"
+        ]
+      },
+      "Expected": {
+        "MinimumRemainingDays": 1
+      }
+    },
+    {
+      "Name": "EST arbitrary CSR using CSR.Request.Db",
+      "Protocol": "EST",
+      "Authentication": {
+        "Type": "ServicePrincipal",
+        "ClientId": "11111111-1111-1111-1111-111111111111",
+        "TenantId": "22222222-2222-2222-2222-222222222222",
+        "ClientSecret": "<client-secret>"
+      },
+      "Request": {
+        "Subject": "CN=smoke-est.example.com",
+        "DNSName": [
+          "smoke-est.example.com"
+        ],
+        "ExtendedKeyUsage": [
+          "ServerAuth"
+        ]
+      },
+      "Expected": {
+        "SubjectRegex": "CN=smoke-est\\.example\\.com",
+        "MinimumRemainingDays": 1
+      }
+    },
+    {
+      "Name": "EST renewal without auth context",
+      "Protocol": "ESTRenewal",
+      "SourceScenario": "EST arbitrary CSR using CSR.Request.Db",
+      "Expected": {
+        "SubjectRegex": "CN=smoke-est\\.example\\.com",
+        "MinimumRemainingDays": 1
+      }
+    }
+  ]
+}

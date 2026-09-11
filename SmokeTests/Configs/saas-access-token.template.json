@@ -1,0 +1,36 @@
+{
+  "Name": "SCEPman SaaS access token",
+  "Url": "https://scepman-saas.example.com",
+  "Scenarios": [
+    {
+      "Name": "EST enrollment using supplied SaaS token",
+      "Protocol": "EST",
+      "Authentication": {
+        "Type": "AccessToken",
+        "AccessToken": "<access-token>"
+      },
+      "Request": {
+        "Subject": "CN=smoke-token.example.com",
+        "DNSName": [
+          "smoke-token.example.com"
+        ],
+        "ExtendedKeyUsage": [
+          "ServerAuth"
+        ]
+      },
+      "Expected": {
+        "SubjectRegex": "CN=smoke-token\\.example\\.com",
+        "MinimumRemainingDays": 1
+      }
+    },
+    {
+      "Name": "EST SaaS renewal without token",
+      "Protocol": "ESTRenewal",
+      "SourceScenario": "EST enrollment using supplied SaaS token",
+      "Expected": {
+        "SubjectRegex": "CN=smoke-token\\.example\\.com",
+        "MinimumRemainingDays": 1
+      }
+    }
+  ]
+}
