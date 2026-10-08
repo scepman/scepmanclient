@@ -2,27 +2,35 @@ name: Analyze PowerShell
 
 on: push
 
-permissions:
-  security-events: write  # Required to upload SARIF results
-  contents: read  # Required to check out the repository
-  actions: read  # Required to get workflow runs, which is needed when uploading SARIF results
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   analyze-powershell-script:
+    name: Analyze PowerShell scripts
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write  # Required to upload SARIF results
+      contents: read  # Required to check out the repository
+      actions: read  # Required to get workflow runs, which is needed when uploading SARIF results
     steps:
     - name: Checkout the repo
-      uses: actions/checkout@v7
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
 
     - name: Run PSScriptAnalyzer
-      uses: microsoft/psscriptanalyzer-action@main
+      uses: microsoft/psscriptanalyzer-action@7a0da25f33985767f15f93140306528900744195 # main
       with:
         path: .\
         recurse: true
         output: results.sarif
 
     - name: Upload PowerShell SARIF file
-      uses: github/codeql-action/upload-sarif@v4
+      uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
       with:
         # Path to SARIF file relative to the root of the repository
         sarif_file: results.sarif
