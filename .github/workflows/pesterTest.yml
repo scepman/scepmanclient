@@ -2,13 +2,23 @@ name: Pester Unit Test
 
 on: push
 
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
     pester-test:
       name: Pester test
       runs-on: ubuntu-latest
+      permissions:
+        contents: read  # Required to check out the repository
       steps:
         - name: Check out repository code
-          uses: actions/checkout@v7
+          uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+          with:
+            persist-credentials: false
         - name: Perform a Pester test from the Invoke-ProjectTests.ps1 file
           shell: pwsh
           run: |
